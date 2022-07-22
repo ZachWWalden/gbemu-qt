@@ -1,9 +1,9 @@
 /*==================================================================================
- *Class -
+ *Class - RegisterFile
  *Author - Zach Walden
- *Created -
- *Last Changed -
- *Description -
+ *Created - 7/22/22
+ *Last Changed - 7/22/22
+ *Description - GameBoy Register File Implementation.
 ====================================================================================*/
 
 /*
@@ -31,28 +31,45 @@
 
 #pragma once
 
-#include "CHANGE.hpp"
+#include "RegisterFile.hpp"
 
+using namespace std;
 
+ RegisterFile::RegisterFile()
+{
 
+}
 
+ RegisterFile::~RegisterFile()
+{
 
+}
 
+uint8_t RegisterFile::readReg(GbRegister reg)
+{
+	return this->regFile[reg].readReg()
+}
 
+void RegisterFile::writeReg(GbRegister reg, uint8_t newValue)
+{
+	this->regFile[reg].writeReg(newValue);
+}
 
+uint16_t RegisterFile::readRegPair(GbRegister regs[])
+{
+	uint8_t readVals[2];
 
+	for(int i = 0; i<2;i++)
+	{
+		readVals[i] = this->regFile[regs[i]].readReg();
+	}
 
-
-
-
-
-
-
-
-
+	uint16_t retVal = ((readVals[0] << 8) & 0x0FF00) | (readVals[1] & 0x0FF);
+	return retVal;
+}
 
 /*
-<++> CHANGE::<++>()
+<++> RegisterFile::<++>()
 {
 
 }

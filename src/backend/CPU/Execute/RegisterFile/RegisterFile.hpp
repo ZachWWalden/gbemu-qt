@@ -1,9 +1,10 @@
 /*==================================================================================
- *Class -
+ *Class - RegisterFile
  *Author - Zach Walden
- *Created -
- *Last Changed -
- *Description -
+ *Created - 7/22/22
+ *Last Changed - 7/22/22
+ *Description - Register File, models gameboy. 8 registers A F, B C, D E, H L
+ * 		Each 8-bit register may be paired with its
 ====================================================================================*/
 
 /*
@@ -29,18 +30,33 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#pragma once
+#include "Register/Register.hpp"
 
+#define NUM_REG 8
 
-class CHANGE
+using namespace std;
+
+enum GbRegister
+{
+	A, F, B, C, D, E, H, L
+};
+
+class RegisterFile
 {
 	//Attributes
 public:
 
 private:
+	Register regFile[NUM_REG];
 	//Methods
 public:
-	CHANGE();
-	~CHANGE();
+	RegisterFile();
+	~RegisterFile();
 
+	uint8_t readReg(GbRegister reg);
+	void writeReg(GbRegister reg, uint8_t newValue);
+
+	uint16_t readRegPair(GbRegister regs[]);
 private:
 };
