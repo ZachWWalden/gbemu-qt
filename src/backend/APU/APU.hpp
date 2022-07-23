@@ -1,9 +1,9 @@
 /*==================================================================================
- *Class - Memory
+ *Class -
  *Author - Zach Walden
- *Created - 7/22/22
- *Last Changed - 7/22/22
- *Description - Memory This includes an MMU, I/O MMU and VRAM, along with the cartridge bank manager.
+ *Created -
+ *Last Changed -
+ *Description -
 ====================================================================================*/
 
 /*
@@ -31,7 +31,7 @@
 
 
 
-class Memory
+class CHANGE
 {
 	//Attributes
 public:
@@ -39,8 +39,8 @@ public:
 private:
 	//Methods
 public:
-	Memory();
-	~Memory();
+	CHANGE();
+	~CHANGE();
 
 private:
 };
