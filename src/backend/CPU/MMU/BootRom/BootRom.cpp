@@ -1,9 +1,9 @@
 /*==================================================================================
- *Class -
+ *Class - BootRom
  *Author - Zach Walden
- *Created -
- *Last Changed -
- *Description -
+ *Created - 7/25/22
+ *Last Changed - 7/25/22
+ *Description - Selects and Presents Correct Boot Rom based off the Presented Rom
 ====================================================================================*/
 
 /*
@@ -31,28 +31,30 @@
 
 #pragma once
 
-#include "CHANGE.hpp"
+#include "BootRom.hpp"
 
+ BootRom::BootRom()
+{
 
+}
+ BootRom::~BootRom()
+{
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
+uint8_t BootRom::read(uint16_t address)
+{
+	uint8_t localAddr = address & (uint8_t) 0x0FF;
+	return this->dmgBootRom[localAddr];
+}
+void BootRom::write(uint16_t address, uint8_t newValue)
+{
+	uint8_t localAddr = address & (uint8_t) 0x0FF;
+	this->dmgBootRom[localAddr] = newValue;
+}
 
 
 /*
-<++> CHANGE::<++>()
+<++> BootRom::<++>()
 {
 
 }
