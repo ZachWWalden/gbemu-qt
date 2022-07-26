@@ -2,7 +2,7 @@
  *Class - RegisterFile
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/22/22
+ *Last Changed - 7/25/22
  *Description - GameBoy Register File Implementation.
 ====================================================================================*/
 
@@ -55,13 +55,33 @@ void RegisterFile::writeReg(GbRegister reg, uint8_t newValue)
 	this->regFile[reg].writeReg(newValue);
 }
 
-uint16_t RegisterFile::readRegPair(GbRegister regs[])
+uint16_t RegisterFile::readRegPair(GbRegister regPair)
 {
-	uint8_t readVals[2];
+	GbRegister readVals[2];
 
-	for(int i = 0; i<2;i++)
+	switch(regPair
 	{
-		readVals[i] = this->regFile[regs[i]].readReg();
+		case AF :
+		{
+			readVals = {A, F};
+			break;
+		}
+		case BC :
+		{
+			readVals = {B, C};
+			break;
+		}
+		case DE :
+		{
+			readVals = {D, E};
+			break;
+		}
+		case HL :
+		{
+			readVals = {H, L};
+			break;
+		}
+		case default : break;
 	}
 
 	uint16_t retVal = ((readVals[0] << 8) & 0x0FF00) | (readVals[1] & 0x0FF);

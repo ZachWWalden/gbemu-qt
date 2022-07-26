@@ -1,9 +1,9 @@
 /*==================================================================================
- *Class - Fetch
+ *Class - StackPointer
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/22/22
- *Description - Fetchs instructions from the system memory.
+ *Last Changed - 7/25/22
+ *Description - 16-bit register. Used for stack pointer and the program counter.
 ====================================================================================*/
 
 /*
@@ -29,18 +29,26 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#pragma once
+#include "stdint.h"
+using namespace std;
 
-
-class Fetch
+class StackPointer
 {
 	//Attributes
 public:
 
 private:
+	uint16_t value
 	//Methods
 public:
-	Fetch();
-	~Fetch();
+	StackPointer();
+	~StackPointer();
+
+	uint16_t readReg();
+	void writeReg(uint16_t);
+	void increment();
+	void decrement();
 
 private:
 };

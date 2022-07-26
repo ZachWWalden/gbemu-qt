@@ -2,7 +2,7 @@
  *Class - Execute
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/22/22
+ *Last Changed - 7/25/22
  *Description - CPU Execution Stage. Decodes Instruction using a Function Pointer lookup table, Reads Operands, and Executes the instructions.
 ====================================================================================*/
 
@@ -29,7 +29,28 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#pragma once
 
+#include "RegisterFile/RegisterFile.hpp"
+
+using namespace std;
+
+enum AddressingMode
+{
+	RegReg, RegImm8, RegImm16, RegMem, RegReg16, Reg16Reg16, NONE
+};
+
+enum CpuOperation
+{
+	ADD, ADC SUB, SBC, XOR, AND, RET, CALL
+};
+
+struct CpuOperation
+{
+	AddressingMode mode = NONE;
+	GbRegister operandOne;
+	GbRegister operandTwo;
+};
 
 class Execute
 {
@@ -37,6 +58,7 @@ class Execute
 public:
 
 private:
+	RegisterFile regFile;
 	//Methods
 public:
 	Execute();

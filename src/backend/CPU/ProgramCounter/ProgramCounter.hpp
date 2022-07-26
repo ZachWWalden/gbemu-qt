@@ -1,9 +1,9 @@
 /*==================================================================================
- *Class -
+ *Class - ProgramCounter
  *Author - Zach Walden
- *Created -
- *Last Changed -
- *Description -
+ *Created - 7/22/22
+ *Last Changed - 7/25/22
+ *Description - ProgramCounters instructions from the system memory.
 ====================================================================================*/
 
 /*
@@ -29,31 +29,23 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#pragma once
-
-#include "CHANGE.hpp"
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-/*
-<++> CHANGE::<++>()
+class ProgramCounter
 {
+	//Attributes
+public:
 
-}
-*/
+private:
+	uint16_t value = 0;
+	//Methods
+public:
+	ProgramCounter();
+	~ProgramCounter();
+
+	uint16_t read();
+	void write(uint16_t newValue);
+	void increment(uint8_t incValue);
+
+private:
+};

@@ -2,7 +2,7 @@
  *Class - RegisterFile
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/22/22
+ *Last Changed - 7/25/22
  *Description - Register File, models gameboy. 8 registers A F, B C, D E, H L
  * 		Each 8-bit register may be paired with its
 ====================================================================================*/
@@ -39,7 +39,7 @@ using namespace std;
 
 enum GbRegister
 {
-	A, F, B, C, D, E, H, L
+	A, F, B, C, D, E, H, L, AF, BC, DE, HL
 };
 
 class RegisterFile
@@ -57,6 +57,6 @@ public:
 	uint8_t readReg(GbRegister reg);
 	void writeReg(GbRegister reg, uint8_t newValue);
 
-	uint16_t readRegPair(GbRegister regs[]);
+	uint16_t readRegPair(GbRegister regPair);
 private:
 };

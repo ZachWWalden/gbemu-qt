@@ -1,9 +1,9 @@
 /*==================================================================================
- *Class -
+ *Class - Execute
  *Author - Zach Walden
- *Created -
- *Last Changed -
- *Description -
+ *Created - 7/22/22
+ *Last Changed - 7/25/22
+ *Description - CPU Execution Stage. Decodes Instruction using a Function Pointer lookup table, Reads Operands, and Executes the instructions.
 ====================================================================================*/
 
 /*
@@ -31,28 +31,12 @@
 
 #pragma once
 
-#include "CHANGE.hpp"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#include "Execute.hpp"
 
 
 
 /*
-<++> CHANGE::<++>()
+<++> Execute::<++>()
 {
 
 }

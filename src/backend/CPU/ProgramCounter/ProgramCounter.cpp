@@ -1,9 +1,8 @@
 /*==================================================================================
- *Class - RegisterShort
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/22/22
- *Description - 16-bit register. Used for stack pointer and the program counter.
+ *Last Changed - 7/25/22
+ *Description - ProgramCounters instructions from the system memory.
 ====================================================================================*/
 
 /*
@@ -31,30 +30,32 @@
 
 #pragma once
 
-#include "RegisterShort.hpp"
+#include "ProgramCounter.hpp"
 
- RegisterShort::RegisterShort()
+ ProgramCounter::ProgramCounter()
+{
+
+}
+ ProgramCounter::~ProgramCounter()
 {
 
 }
 
- RegisterShort::~RegisterShort()
-{
-
-}
-
-uint16_t RegisterShort::readReg()
+uint16_t ProgramCounter::read()
 {
 	return this->value;
 }
-
-void RegisterShort::writeReg(uint16_t newValue)
+void ProgramCounter::write(uint16_t newValue)
 {
 	this->value = newValue;
 }
+void ProgramCounter::increment(uint8_t incValue)
+{
+	this->value += incValue;
+}
 
 /*
-<++> RegisterShort::<++>()
+<++> ProgramCounter::<++>()
 {
 
 }

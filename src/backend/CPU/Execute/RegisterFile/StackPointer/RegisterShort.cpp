@@ -1,8 +1,8 @@
 /*==================================================================================
- *Class - RegisterShort
+ *Class - StackPointer
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/22/22
+ *Last Changed - 7/25/22
  *Description - 16-bit register. Used for stack pointer and the program counter.
 ====================================================================================*/
 
@@ -30,23 +30,40 @@
  */
 
 #pragma once
-#include "stdint.h"
-using namespace std;
 
-class RegisterShort
+#include "StackPointer.hpp"
+
+ StackPointer::StackPointer()
 {
-	//Attributes
-public:
 
-private:
-	uint16_t value
-	//Methods
-public:
-	RegisterShort();
-	~RegisterShort();
+}
 
-	uint16_t readReg();
-	void writeReg(uint16_t);
+ StackPointer::~StackPointer()
+{
 
-private:
-};
+}
+
+uint16_t StackPointer::readReg()
+{
+	return this->value;
+}
+
+void StackPointer::writeReg(uint16_t newValue)
+{
+	this->value = newValue;
+}
+void StackPointer::increment(uint16_t newValue)
+{
+	this->value += 1;
+}
+void StackPointer::decrement(uint16_t newValue)
+{
+	this->value -= 1;
+}
+
+/*
+<++> StackPointer::<++>()
+{
+
+}
+*/
