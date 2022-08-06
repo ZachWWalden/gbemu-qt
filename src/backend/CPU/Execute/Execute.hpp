@@ -44,22 +44,24 @@ enum AddressingMode
 
 enum CpuOperation
 {
-	ADD, ADC SUB, SBC, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA
+	ADD, ADC SUB, SBC, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA, SRL, SWAP, BIT, SET, RES, JR
 };
 
 struct GbInstruction
 {
-	GbInstruction(AddressingMode newMode, CpuOperation op, GbRegister opOne, GbRegister opTwo, void* func)
+	GbInstruction(AddressingMode newMode, CpuOperation op, GbRegister opOne, GbRegister opTwo, void* func, GbFlag flag)
 	{
 		mode = newMode;
 		op = newOp;
 		operandOne = opOne;
 		operandTwo = opTwo;
+		condition = flag
 		execFunction = func;
 	}
 	AddressingMode mode;
 	CpuOperation op;
 	GbRegister operandOne,operandTwo;
+	GbFlag condition
 	void * execFunction;
 };
 
@@ -69,7 +71,24 @@ class Execute
 public:
 
 private:
-	GbInstruction instDec[NUM_INSTRUCTIONS] =
+	GbInstruction instDec[NUM_INSTRUCTIONS] = {
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+}
 	RegisterFile regFile;
 	//Methods
 public:

@@ -112,6 +112,18 @@ void RegisterFile::modifyFlag(GbFlag flag, bool newVal)
 	this->writeReg(F, flags);
 }
 
+bool RegisterFile::checkFlag(GbFlag flag)
+{
+	uint8_t flags = this->readReg(F);
+	uint8_t val = (flags >> flag) & 0x01;
+	bool retVal = False;
+	if(val == 1)
+	{
+		retVal = true;
+	}
+	return retVal;
+}
+
 /*
 <++> RegisterFile::<++>()
 {
