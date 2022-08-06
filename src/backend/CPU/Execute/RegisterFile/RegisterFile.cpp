@@ -58,8 +58,9 @@ void RegisterFile::writeReg(GbRegister reg, uint8_t newValue)
 uint16_t RegisterFile::readRegPair(GbRegister regPair)
 {
 	GbRegister readVals[2];
+	bool sp = false;
 	uint16_t retVal;
-	switch(regPair
+	switch(regPair)
 	{
 		case AF :
 		{
@@ -84,12 +85,57 @@ uint16_t RegisterFile::readRegPair(GbRegister regPair)
 		case SP :
 		{
 			retVal = this->sp;
+			sp = true;
+			break;
 		}
 		case default : break;
 	}
-
-	retVal = ((readVals[0] << 8) & 0x0FF00) | (readVals[1] & 0x0FF);
+	if(!sp)
+	{
+		retVal = ((readVals[0] << 8) & 0x0FF00) | (readVals[1] & 0x0FF);
+	}
 	return retVal;
+}
+
+void RegisterFile::wirteRegPair(GbRegister regPair, uint16_t newValue)
+{
+	GbRegister writeVals[2];
+	bool sp = false;
+	switch(regPair)
+	{
+		case AF :
+		{
+			writeVals = {A, F};
+			break;
+		}
+		case BC :
+		{
+			writeVals = {B, C};
+			break;
+		}
+		case DE :
+		{
+			writeVals = {D, E};
+			break;
+		}
+		case HL :
+		{
+			writeVals = {H, L};
+			break;
+		}
+		case SP :
+		{
+			this->sp = newVal;
+			sp = true;
+			break;
+		}
+		case default : break;
+	}
+	if(!sp)
+	{
+		this->writeReg(writeVals[0], (newValue >> 8) & 0x00FF);
+		this->writeReg(writeVals[1], newValue & 0x00FF);
+	}
 }
 
 void RegisterFile::modifyFlag(GbFlag flag, bool newVal)

@@ -43,7 +43,7 @@ enum GbRegister
 };
 enum GbFlag
 {
-	Z = 7, N = 6, H = 5, C = 4
+	NONE, Z = 7, N = 6, H = 5, C = 4
 };
 
 class RegisterFile
@@ -63,7 +63,9 @@ public:
 	void writeReg(GbRegister reg, uint8_t newValue);
 
 	uint16_t readRegPair(GbRegister regPair);
+	void wirteRegPair(GbRegister regPair, uint16_t newValue);
 
 	void modifyFlag(GbFlag flag, bool newVal);
+	bool checkFlag(GbFlag flag);
 private:
 };
