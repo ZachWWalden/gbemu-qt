@@ -35,6 +35,8 @@
 
 using namespace std;
 
+#define NUM_INSTRUCTIONS 256
+
 enum AddressingMode
 {
 	RegReg, RegImm8, RegImm16, RegMem, RegReg16, Reg16Reg16, NONE
@@ -42,14 +44,23 @@ enum AddressingMode
 
 enum CpuOperation
 {
-	ADD, ADC SUB, SBC, XOR, AND, RET, CALL
+	ADD, ADC SUB, SBC, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA
 };
 
-struct CpuOperation
+struct GbInstruction
 {
-	AddressingMode mode = NONE;
-	GbRegister operandOne;
-	GbRegister operandTwo;
+	GbInstruction(AddressingMode newMode, CpuOperation op, GbRegister opOne, GbRegister opTwo, void* func)
+	{
+		mode = newMode;
+		op = newOp;
+		operandOne = opOne;
+		operandTwo = opTwo;
+		execFunction = func;
+	}
+	AddressingMode mode;
+	CpuOperation op;
+	GbRegister operandOne,operandTwo;
+	void * execFunction;
 };
 
 class Execute
@@ -58,11 +69,15 @@ class Execute
 public:
 
 private:
+	GbInstruction instDec[NUM_INSTRUCTIONS] =
 	RegisterFile regFile;
 	//Methods
 public:
 	Execute();
 	~Execute();
-
+	uint8_t executeInstruction(uint8_t* instructionBytes);
 private:
+	GbInstruction decodeInstruction(uint8_t* instructionBytes);
+	GbInstruction decodePrefixInstruction(uint8_t* instructionBytes);
+	//Functions to execute each Instruction.
 };

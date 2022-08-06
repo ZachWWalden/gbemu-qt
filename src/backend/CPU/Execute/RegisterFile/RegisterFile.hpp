@@ -39,7 +39,11 @@ using namespace std;
 
 enum GbRegister
 {
-	A, F, B, C, D, E, H, L, AF, BC, DE, HL
+	A, F, B, C, D, E, H, L, AF, BC, DE, HL, SP
+};
+enum GbFlag
+{
+	Z = 7, N = 6, H = 5, C = 4
 };
 
 class RegisterFile
@@ -49,6 +53,7 @@ public:
 
 private:
 	Register regFile[NUM_REG];
+	uint16_t sp;
 	//Methods
 public:
 	RegisterFile();
@@ -58,5 +63,7 @@ public:
 	void writeReg(GbRegister reg, uint8_t newValue);
 
 	uint16_t readRegPair(GbRegister regPair);
+
+	void modifyFlag(GbFlag flag, bool newVal);
 private:
 };
