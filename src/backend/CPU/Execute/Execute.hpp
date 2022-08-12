@@ -39,12 +39,12 @@ using namespace std;
 
 enum AddressingMode
 {
-	RegReg, RegImm8, RegImm16, RegMem, RegReg16, Reg16Reg16, NONE
+	RegReg, RegImm8, RegSimm8, Reg16Simm8, RegImm16, RegMem, RegReg16, Reg16Reg16,Reg16Reg16simm8, RegNone, Reg16None, MemNone, NONE
 };
 
 enum CpuOperation
 {
-	ADD, ADC SUB, SBC, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA, SRL, SWAP, BIT, SET, RES, JR
+	ADD, ADC SUB, SBC, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA, SRL, SWAP, BIT, SET, RES, JR, JP, RET, PUSH, POP, DI, EI, CPL, CCF, DAA, SCF, HALT, NOP, STOP
 };
 
 struct GbInstruction
@@ -99,4 +99,8 @@ private:
 	GbInstruction decodeInstruction(uint8_t* instructionBytes);
 	GbInstruction decodePrefixInstruction(uint8_t* instructionBytes);
 	//Functions to execute each Instruction.
+
+	uint8_t bit(GbInstruction inst, uint8_t* instBytes);
+	uint8_t res(GbInstruction inst, uint8_t* instBytes);
+	uint8_t set(GbInstruction inst, uint8_t* instBytes);
 };

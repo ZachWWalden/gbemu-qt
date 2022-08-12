@@ -37,7 +37,7 @@ class ProgramCounter
 public:
 
 private:
-	uint16_t value = 0;
+	uint16_t value;
 	//Methods
 public:
 	ProgramCounter();

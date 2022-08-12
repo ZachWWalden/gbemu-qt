@@ -39,7 +39,7 @@ using namespace std;
 
 enum GbRegister
 {
-	A, F, B, C, D, E, H, L, AF, BC, DE, HL, SP
+	A=0, F=1, B=2, C=3, D=4, E=5, H=6, L=7, AF, BC, DE, HL, SP
 };
 enum GbFlag
 {

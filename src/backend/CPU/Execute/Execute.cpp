@@ -33,7 +33,46 @@
 
 #include "Execute.hpp"
 
+GbInstruction Execute::decodeInstruction(uint8_t* instructionBytes)
+{
 
+}
+GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
+{
+
+}
+//Functions to execute each Instruction.
+
+uint8_t Execute::bit(GbInstruction inst, uint8_t* instBytes)
+{
+	//Operand One is the Bit operand. operand two is the register operand.
+	uint8_t operand;
+	//There are two addressing mode for this Instruction. RegNone, and MemNone.
+	if(inst.mode == RegNone)
+	{
+		//Fetch Register.
+		operand = this->regFile.readReg(inst.operandTwo);
+	}
+	else if(inst.mode == MemNone)
+	{
+		//Fetch Operand from memory.
+		//Read Reg Pair
+		uint16_t address = this->regFile.readRegPair(inst.operandTwo);
+		operand = this->mmm->read(address);
+	}
+	else
+	{
+		//TODO Trow Exception.
+	}
+}
+uint8_t Execute::res(GbInstruction inst, uint8_t* instBytes)
+{
+
+}
+uint8_t Execute::set(GbInstruction inst, uint8_t* instBytes)
+{
+
+}
 
 /*
 <++> Execute::<++>()
