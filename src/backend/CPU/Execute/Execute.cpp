@@ -43,7 +43,7 @@ GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
 }
 //Functions to execute each Instruction.
 
-uint8_t Execute::bit(GbInstruction inst, uint8_t* instBytes)
+bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
@@ -58,20 +58,105 @@ uint8_t Execute::bit(GbInstruction inst, uint8_t* instBytes)
 		//Fetch Operand from memory.
 		//Read Reg Pair
 		uint16_t address = this->regFile.readRegPair(inst.operandTwo);
-		operand = this->mmm->read(address);
+		operand = this->mem->read(address);
 	}
 	else
 	{
-		//TODO Trow Exception.
+		return false;
 	}
+	//Execute Instruction
+	//create operand mask value. shift 1 left by bit nneded to test.
+	uint8_t mask = 0x00 | 0x01 << inst.operandOne;
+	//Operand, is now wearing a chin diaper.
+	operand = operand & mask;
+	//I like this line 9 line iof/else into a 1 liner....
+	this->regFile.modifyFlag(Z, operand >> inst.operandOne == 0x01)
+	//Clear N, Set H.
+	this->regFile.modifyFlag(N, false);
+	this->regFile.modifyFlag(H, true);
+	return true;
 }
-uint8_t Execute::res(GbInstruction inst, uint8_t* instBytes)
+bool Execute::res(GbInstruction inst, uint8_t* instBytes)
 {
-
+	//Operand One is the Bit operand. operand two is the register operand.
+	uint8_t operand;
+	uint16_t address;
+	//There are two addressing mode for this Instruction. RegNone, and MemNone.
+	if(inst.mode == RegNone)
+	{
+		//Fetch Register.
+		operand = this->regFile.readReg(inst.operandTwo);
+	}
+	else if(inst.mode == MemNone)
+	{
+		//Fetch Operand from memory.
+		//Read Reg Pair
+		address = this->regFile.readRegPair(inst.operandTwo);
+		operand = this->mem->read(address);
+	}
+	else
+	{
+		return false;
+	}
+	//clear bit inst.operandOne in the register or memory location pointed to by operand b.
+	uint8_t mask = ~(0x00 | 0x01 << inst.operandOne);
+	//WEAR YOU"RE MASK COORECTlY;
+	operand = operand & mask;
+	//write back operand one.
+	if(inst.mode == RegNone)
+	{
+		//Write Register.
+		this->regFile.writeReg(inst.operandTwo, operand);
+	}
+	else
+	{
+		//Write Operand to memory.
+		//Read Reg Pair
+		this->mem->write(address, operand);
+	}
+	//Flags RES does not affect any flags.
+	return true;
 }
-uint8_t Execute::set(GbInstruction inst, uint8_t* instBytes)
+bool Execute::set(GbInstruction inst, uint8_t* instBytes)
 {
-
+	//Operand One is the Bit operand. operand two is the register operand.
+	uint8_t operand;
+	uint16_t address;
+	//There are two addressing mode for this Instruction. RegNone, and MemNone.
+	if(inst.mode == RegNone)
+	{
+		//Fetch Register.
+		operand = this->regFile.readReg(inst.operandTwo);
+	}
+	else if(inst.mode == MemNone)
+	{
+		//Fetch Operand from memory.
+		//Read Reg Pair
+		address = this->regFile.readRegPair(inst.operandTwo);
+		operand = this->mem->read(address);
+	}
+	else
+	{
+		return false;
+	}
+	//clear bit inst.operandOne in the register or memory location pointed to by operand b.
+	uint8_t mask = 0x01 << inst.operandOne;
+	//WEAR YOU"RE MASK COORECTlY;
+	operand = operand & mask;
+	//write back operand one.
+	if(inst.mode == RegNone)
+	{
+		//Write Register.
+		this->regFile.writeReg(inst.operandTwo, operand);
+	}
+	else
+	{
+		//Write Operand to memory.
+		//Read Reg Pair
+		this->mem->write(address, operand);
+	}
+	//Flags RES does not affect any flags.
+	return true;
 }
 
 /*

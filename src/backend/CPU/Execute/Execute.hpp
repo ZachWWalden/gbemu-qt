@@ -2,7 +2,7 @@
  *Class - Execute
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/25/22
+ *Last Changed - 8/15/22
  *Description - CPU Execution Stage. Decodes Instruction using a Function Pointer lookup table, Reads Operands, and Executes the instructions.
 ====================================================================================*/
 
@@ -32,6 +32,7 @@
 #pragma once
 
 #include "RegisterFile/RegisterFile.hpp"
+#include "../MMU/MMU.hpp"
 
 using namespace std;
 
@@ -62,7 +63,7 @@ struct GbInstruction
 	CpuOperation op;
 	GbRegister operandOne,operandTwo;
 	GbFlag condition
-	void * execFunction;
+	void (*execFunction)(GbInstruction, uint8_t*);
 };
 
 class Execute
@@ -89,7 +90,29 @@ GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstructio
 GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
 GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
 }
+
+GbInstruction prefixInstDec[NUM_INSTRUCTIONS] = {
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(),
+GbInstruction(RegNone, BIT, A, B), GbInstruction(RegNone, BIT, A, C), GbInstruction(RegNone, BIT, A, D), GbInstruction(RegNone, BIT, A, E), GbInstruction(RegNone, BIT, A, H), GbInstruction(RegNone, BIT, A, L), GbInstruction(MemNone, BIT, A, HL), GbInstruction(RegNone, BIT, A, A), GbInstruction(RegNone, BIT, F, B), GbInstruction(RegNone, BIT, F, C), GbInstruction(RegNone, BIT, F, D), GbInstruction(RegNone, BIT, F, E), GbInstruction(RegNone, BIT, F, H), GbInstruction(RegNone, BIT, F, L), GbInstruction(MemNone, BIT, F, HL), GbInstruction(RegNone, BIT, F, A),
+GbInstruction(RegNone, BIT), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, BIT, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, BIT, A, HL), GbInstruction(),
+GbInstruction(RegNone, BIT), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, BIT, B, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, BIT, C, HL), GbInstruction(),
+GbInstruction(RegNone, BIT), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, BIT, D, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, BIT, E, HL), GbInstruction(),
+GbInstruction(RegNone, RES), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, RES, H, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone,RES, L, HL), GbInstruction(),
+GbInstruction(RegNone, RES), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, RES, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone,RES, A, HL), GbInstruction(),
+GbInstruction(RegNone, RES), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, RES, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone,RES, A, HL), GbInstruction(),
+GbInstruction(RegNone, RES), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, RES, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone,RES, A, HL), GbInstruction(),
+GbInstruction(RegNone, SET), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(),
+GbInstruction(RegNone, SET), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(),
+GbInstruction(RegNone, SET), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(),
+GbInstruction(RegNone, SET), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(), GbInstruction(MemNone, SET, A, HL), GbInstruction(),
+}
+
+	//Objects and Object Handles.
 	RegisterFile regFile;
+	MMU* mem;
 	//Methods
 public:
 	Execute();
@@ -100,7 +123,7 @@ private:
 	GbInstruction decodePrefixInstruction(uint8_t* instructionBytes);
 	//Functions to execute each Instruction.
 
-	uint8_t bit(GbInstruction inst, uint8_t* instBytes);
-	uint8_t res(GbInstruction inst, uint8_t* instBytes);
-	uint8_t set(GbInstruction inst, uint8_t* instBytes);
+	bool bit(GbInstruction inst, uint8_t* instBytes);
+	bool res(GbInstruction inst, uint8_t* instBytes);
+	bool set(GbInstruction inst, uint8_t* instBytes);
 };
