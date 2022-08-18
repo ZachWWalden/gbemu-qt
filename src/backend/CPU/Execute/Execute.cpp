@@ -2,7 +2,7 @@
  *Class - Execute
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/25/22
+ *Last Changed - 8/17/22
  *Description - CPU Execution Stage. Decodes Instruction using a Function Pointer lookup table, Reads Operands, and Executes the instructions.
 ====================================================================================*/
 
@@ -33,6 +33,10 @@
 
 #include "Execute.hpp"
 
+/*
+TODO 1. Finish add flags 2. Implement program counter increments.
+*/
+
 GbInstruction Execute::decodeInstruction(uint8_t* instructionBytes)
 {
 
@@ -42,7 +46,55 @@ GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
 
 }
 //Functions to execute each Instruction.
-
+bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
+{
+	uint16_t opOne;
+	uint16_t opTwo;
+	uint16_t result;
+	//Fetch Operands
+	if(inst.mode == RegReg)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & this->regFile.readReg(inst.operandTwo);
+	}
+	else if(inst.mode == RegImm8)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & instBytes[1];
+	}
+	else if(inst.mode == RegMem)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & this->mem.read(this->regFile.readRegPair(inst.operandTwo));
+	}
+	else if(inst.mode == Reg16Simm8)
+	{
+		//Signed immeadiate must be sign extended to at least 16 bits.
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & (instBytes[1]) | ((instBytes[1] & 0x80 == 0x80) ? 0xFF00 : 0x0000);
+	}
+	else if(inst.mode == Reg16Reg16)
+	{
+		opOne = 0x00FF & this->regFile.readRegPair(inst.operandOne);
+		opTwo = 0x00FF & this->regFile.readRegPair(inst.operandTwo);
+	}
+	else
+	{
+		return false;
+	}
+	//Execute Instruction
+	result = opOne + opTwo;
+	//Write Back Results.
+	if(inst.mode == RegReg || inst.mode == RegImm8 || inst.mode == RegMem)
+	{
+		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x00FF))
+	}
+	else if(inst.mode == Reg16Simm8 || inst.mode == Reg16Reg16)
+	{
+		this->regFile.writeRegPair(inst.operandOne, result);
+	}
+	return true;
+}
 bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
