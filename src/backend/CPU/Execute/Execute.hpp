@@ -124,6 +124,8 @@ private:
 	GbInstruction decodePrefixInstruction(uint8_t* instructionBytes);
 	//Functions to execute each Instruction.
 
+	bool inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool dec(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 	bool add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 	bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 	bool sub(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);

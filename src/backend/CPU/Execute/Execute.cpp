@@ -32,6 +32,7 @@
 #pragma once
 
 #include "Execute.hpp"
+#include <cstdint>
 
 /*
 TODO 1. Finish add flags 2. Implement program counter increments.
@@ -46,7 +47,106 @@ GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
 
 }
 //Functions to execute each Instruction.
-bool Execute::add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	uint16_t opOne;
+	uint16_t result;
+	pcInc = 1;
+	//Fetch Operands
+	if(inst.mode == RegNone)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+	}
+	else if(inst.mode == MemNone)
+	{
+		opOne = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+	}
+	else if(inst.mode == Reg16None)
+	{
+		//Signed immeadiate must be sign extended to at least 16 bits.
+		opOne = this->regFile.readRegPair(inst.operandOne);
+	}
+	else
+	{
+		return false;
+	}
+	result = opOne + 0x01;
+	//16-bit INC/DEC does not affect the flags.
+	if(inst.mode != Reg16None)
+	{
+		//Carry is unaffected
+		this->regFile.modifyFlag(Z, (result & 0x0FF) ==0);
+		//Half Carry
+		this->regFile.modifyFlag(H, ((opOne & 0x0F) + 1) == 0x10);
+		//Clear N
+		this->regFile.modifyFlag(N, false);
+	}
+	//Write Back
+	if(inst.mode == RegNone)
+	{
+		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
+	}
+	else if(inst.mode == MemNone)
+	{
+		this->mem->write(this->regFile.readRegPair(inst.operandTwo), (uint8_t)(result & 0x0FF));
+	}
+	else
+	{
+		//Signed immeadiate must be sign extended to at least 16 bits.
+		this->regFile.writeRegPair(inst.operandOne, result);
+	}
+	return true;
+}
+bool dec(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)bool Execute::add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	uint16_t opOne;
+	uint16_t result;
+	pcInc = 1;
+	//Fetch Operands
+	if(inst.mode == RegNone)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+	}
+	else if(inst.mode == MemNone)
+	{
+		opOne = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+	}
+	else if(inst.mode == Reg16None)
+	{
+		//Signed immeadiate must be sign extended to at least 16 bits.
+		opOne = this->regFile.readRegPair(inst.operandOne);
+	}
+	else
+	{
+		return false;
+	}
+	result = opOne - 0x01;
+	//16-bit INC/DEC does not affect the flags.
+	if(inst.mode != Reg16None)
+	{
+		//Carry is unaffected
+		this->regFile.modifyFlag(Z, (result & 0x0FF) ==0);
+		//Half Carry
+		this->regFile.modifyFlag(H, (opOne & 0x0F) < 0x01 );
+		//Clear N
+		this->regFile.modifyFlag(N, true);
+	}
+	//Write Back
+	if(inst.mode == RegNone)
+	{
+		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
+	}
+	else if(inst.mode == MemNone)
+	{
+		this->mem->write(this->regFile.readRegPair(inst.operandTwo), (uint8_t)(result & 0x0FF));
+	}
+	else
+	{
+		//Signed immeadiate must be sign extended to at least 16 bits.
+		this->regFile.writeRegPair(inst.operandOne, result);
+	}
+	return true;
+}
 {
 	uint16_t opOne;
 	uint16_t opTwo;
