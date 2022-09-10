@@ -46,11 +46,11 @@ GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
 
 }
 //Functions to execute each Instruction.
-bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
+bool Execute::add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint16_t opOne;
 	uint16_t opTwo;
-	uint16_t result;
+	uint32_t result;
 	//Fetch Operands
 	if(inst.mode == RegReg)
 	{
@@ -65,18 +65,20 @@ bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
 	else if(inst.mode == RegMem)
 	{
 		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
-		opTwo = 0x00FF & this->mem.read(this->regFile.readRegPair(inst.operandTwo));
+		opTwo = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
 	}
 	else if(inst.mode == Reg16Simm8)
 	{
 		//Signed immeadiate must be sign extended to at least 16 bits.
 		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
-		opTwo = 0x00FF & (instBytes[1]) | ((instBytes[1] & 0x80 == 0x80) ? 0xFF00 : 0x0000);
+		opTwo = 0x00FF & (instBytes[1]) | (((instBytes[1] & 0x80) == 0x80) ? 0xFF00 : 0x0000);
+		//Set Zero flag to zero. This is due to 16-bit arithmetic being double pumped, other than the INC/DEC which feature 16-bit units with proper flag checks for that width.
+		this->regFile.modifyFlag(Z, false);
 	}
 	else if(inst.mode == Reg16Reg16)
 	{
-		opOne = 0x00FF & this->regFile.readRegPair(inst.operandOne);
-		opTwo = 0x00FF & this->regFile.readRegPair(inst.operandTwo);
+		opOne = 0xFFFF & this->regFile.readRegPair(inst.operandOne);
+		opTwo = 0xFFFF & this->regFile.readRegPair(inst.operandTwo);
 	}
 	else
 	{
@@ -84,18 +86,38 @@ bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
 	}
 	//Execute Instruction
 	result = opOne + opTwo;
+	//Set N flag to 0
+	this->regFile.modifyFlag(N, false);
 	//Write Back Results.
 	if(inst.mode == RegReg || inst.mode == RegImm8 || inst.mode == RegMem)
 	{
+		//Check carry & Half Carry
+		this->regFile.modifyFlag(H,(((opOne & 0x0F) + (opTwo & 0x0F)) & 0x10) == 0x10);
+		this->regFile.modifyFlag(C,(result & 0x100) == 0x100);
+		//set zero flag
+		this->regFile(Z, (uint8_t)(result & 0x00FF) == 0x00)
 		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x00FF))
 	}
 	else if(inst.mode == Reg16Simm8 || inst.mode == Reg16Reg16)
 	{
-		this->regFile.writeRegPair(inst.operandOne, result);
+		//Check carry and half carry.
+		this->regFile.modifyFlag(H,(((opOne & 0x0FFF) + (opTwo & 0x0FFF)) & 0x1000) == 0x1000);
+		this->regFile.modifyFlag(C,(result & 0x10000) == 0x10000);
+		this->regFile.writeRegPair(inst.operandOne, (uint16_t)(result & 0x0FFFF);
+	}
+	if(inst.mode == Reg16Simm8 || inst.mode == RegImm8)
+	{
+		//Increment Program counter by two
+		pcInc = 2;
+	}
+	else
+	{
+		//Increment Program Counter by One.
+		pcInc = 1;
 	}
 	return true;
 }
-bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
+bool Execute::bit(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
@@ -126,9 +148,11 @@ bool Execute::bit(GbInstruction inst, uint8_t* instBytes)
 	//Clear N, Set H.
 	this->regFile.modifyFlag(N, false);
 	this->regFile.modifyFlag(H, true);
+	//Increment The Program Counter
+	pcInc = 2;
 	return true;
 }
-bool Execute::res(GbInstruction inst, uint8_t* instBytes)
+bool Execute::res(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
@@ -167,9 +191,11 @@ bool Execute::res(GbInstruction inst, uint8_t* instBytes)
 		this->mem->write(address, operand);
 	}
 	//Flags RES does not affect any flags.
+	//Increment The Program Counter
+	pcInc = 2;
 	return true;
 }
-bool Execute::set(GbInstruction inst, uint8_t* instBytes)
+bool Execute::set(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
@@ -207,7 +233,9 @@ bool Execute::set(GbInstruction inst, uint8_t* instBytes)
 		//Read Reg Pair
 		this->mem->write(address, operand);
 	}
-	//Flags RES does not affect any flags.
+	//Flags SET does not affect any flags.
+	//Increment The Program Counter
+	pcInc = 2;
 	return true;
 }
 

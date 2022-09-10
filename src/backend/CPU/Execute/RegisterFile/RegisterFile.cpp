@@ -83,6 +83,7 @@ uint16_t RegisterFile::readRegPair(GbRegister regPair)
 			break;
 		}
 		case SP :
+
 		{
 			retVal = this->sp;
 			sp = true;

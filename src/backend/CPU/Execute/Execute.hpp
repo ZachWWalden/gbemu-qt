@@ -32,6 +32,7 @@
 #pragma once
 
 #include "RegisterFile/RegisterFile.hpp"
+#include "../ProgramCounter/ProgramCounter.hpp"
 #include "../MMU/MMU.hpp"
 
 using namespace std;
@@ -45,18 +46,18 @@ enum AddressingMode
 
 enum CpuOperation
 {
-	ADD, ADC SUB, SBC, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA, SRL, SWAP, BIT, SET, RES, JR, JP, RET, PUSH, POP, DI, EI, CPL, CCF, DAA, SCF, HALT, NOP, STOP
+	ADD, ADC, SUB, SBC, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA, SRL, SWAP, BIT, SET, RES, JR, JP, RET, PUSH, POP, DI, EI, CPL, CCF, DAA, SCF, HALT, NOP, STOP
 };
 
 struct GbInstruction
 {
-	GbInstruction(AddressingMode newMode, CpuOperation op, GbRegister opOne, GbRegister opTwo, void* func, GbFlag flag)
+	GbInstruction(AddressingMode newMode, CpuOperation newOp, GbRegister opOne, GbRegister opTwo, void* func, GbFlag flag)
 	{
 		mode = newMode;
 		op = newOp;
 		operandOne = opOne;
 		operandTwo = opTwo;
-		condition = flag
+		condition = flag;
 		execFunction = func;
 	}
 	AddressingMode mode;
@@ -117,14 +118,14 @@ GbInstruction(RegNone, SET), GbInstruction(), GbInstruction(), GbInstruction(), 
 public:
 	Execute();
 	~Execute();
-	uint8_t executeInstruction(uint8_t* instructionBytes);
+	uint8_t executeInstruction(uint8_t* instructionBytes, uint8_t &pcInc);
 private:
 	GbInstruction decodeInstruction(uint8_t* instructionBytes);
 	GbInstruction decodePrefixInstruction(uint8_t* instructionBytes);
 	//Functions to execute each Instruction.
 
-	bool add(GbInstruction inst, uint8_t* instBytes);
-	bool bit(GbInstruction inst, uint8_t* instBytes);
-	bool res(GbInstruction inst, uint8_t* instBytes);
-	bool set(GbInstruction inst, uint8_t* instBytes);
+	bool add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool bit(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool res(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool set(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 };
