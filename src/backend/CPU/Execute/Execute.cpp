@@ -115,7 +115,53 @@ bool Execute::add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 		//Increment Program Counter by One.
 		pcInc = 1;
 	}
+	else
+	{
+		return false;
+	}
 	return true;
+}
+bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	uint8_t opOne;
+	uint8_t opTwo;
+	uint16_t result;
+	//Fetch Operands
+	if(inst.mode == RegReg)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & this->regFile.readReg(inst.operandTwo);
+		pcInc = 1;
+	}
+	else if(inst.mode == RegImm8)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & instBytes[1];
+		pcInc = 1;
+	}
+	else if(inst.mode == RegMem)
+	{
+		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		pcInc = 2;
+	}
+	else
+	{
+		return false;
+	}
+	//Get carry bit.
+	uint8_t carry = this->regFile.checkFlag(C) ? 0x01 : 0x00;
+	//Execute Instruction
+	result = opOne + opTwo + carry;
+	//Check Zero
+	this->regFile.modifyFlag(Z, result == 0x0000);
+	//Check Carry
+	this->regFile.modifyFlag(C, (result & 0x100) == 0x100);
+	//Check Half Carry
+	this->regFile.modifyFlag(H,(((opOne & 0x0F) + (opTwo &0x0F) + carry) & 0x10) == 0x10);
+	//Write Result.
+	this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0xFF));
+	return false;
 }
 bool Execute::bit(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {

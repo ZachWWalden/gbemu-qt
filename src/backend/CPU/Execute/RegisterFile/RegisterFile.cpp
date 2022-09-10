@@ -163,7 +163,7 @@ bool RegisterFile::checkFlag(GbFlag flag)
 {
 	uint8_t flags = this->readReg(F);
 	uint8_t val = (flags >> flag) & 0x01;
-	bool retVal = False;
+	bool retVal = false;
 	if(val == 1)
 	{
 		retVal = true;
