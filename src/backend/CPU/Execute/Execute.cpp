@@ -198,8 +198,11 @@ bool sub(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	this->regFile.modifyFlag(Z, (result & 0x0FF) == 0x00);
 	//Set Negative
 	this->regFile.modifyFlag(N, true);
-	//Write Result
-	this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
+	//Write Result if not the compare instruction.
+	if(inst.op != CP)
+	{
+		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
+	}
 	return true;
 }
 bool sbc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
