@@ -126,6 +126,11 @@ private:
 
 	bool add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 	bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool sub(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool sbc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool bwAnd(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool bwXor(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	bool bwOr(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 	bool bit(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 	bool res(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
 	bool set(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);

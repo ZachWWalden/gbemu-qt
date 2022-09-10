@@ -137,13 +137,13 @@ bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	{
 		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
 		opTwo = 0x00FF & instBytes[1];
-		pcInc = 1;
+		pcInc = 2;
 	}
 	else if(inst.mode == RegMem)
 	{
 		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
 		opTwo = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
-		pcInc = 2;
+		pcInc = 1;
 	}
 	else
 	{
@@ -161,7 +161,133 @@ bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	this->regFile.modifyFlag(H,(((opOne & 0x0F) + (opTwo &0x0F) + carry) & 0x10) == 0x10);
 	//Write Result.
 	this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0xFF));
-	return false;
+	return true;
+}
+bool sub(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+
+	return true;
+}
+bool sbc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	return true;
+}
+bool bwAnd(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	uint8_t opOne;
+	uint8_t opTwo;
+	uint8_t result;
+	if(inst.mode == RegReg)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->regFile.readReg(inst.operandTwo);
+		pcInc = 1;
+	}
+	else if(inst.mode == RegImm8)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = instBytes[1];
+		pcInc = 2;
+	}
+	else if(inst.mode == RegMem)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		pcInc = 1;
+	}
+	else
+	{
+		return false;
+	}
+	//Execute Instruction
+	result = opOne & opTwo;
+	//Check Zero Flag
+	this->regFile.modifyFlag(Z, result == 0x00);
+	//Set flags
+	this->regFile.modifyFlag(N, false);
+	this->regFile.modifyFlag(H, true);
+	this->regFile.modifyFlag(C, false);
+	//Write Result
+	this->regFile.writeReg(inst.operandOne, result);
+	return true;
+}
+bool bwXor(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	uint8_t opOne;
+	uint8_t opTwo;
+	uint8_t result;
+	if(inst.mode == RegReg)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->regFile.readReg(inst.operandTwo);
+		pcInc = 1;
+	}
+	else if(inst.mode == RegImm8)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = instBytes[1];
+		pcInc = 2;
+	}
+	else if(inst.mode == RegMem)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		pcInc = 1;
+	}
+	else
+	{
+		return false;
+	}
+	//Execute Instruction
+	result = opOne ^ opTwo;
+	//Check Zero Flag
+	this->regFile.modifyFlag(Z, result == 0x00);
+	//Set flags
+	this->regFile.modifyFlag(N, false);
+	this->regFile.modifyFlag(H, false);
+	this->regFile.modifyFlag(C, false);
+	//Write Result
+	this->regFile.writeReg(inst.operandOne, result);
+	return true;
+}
+bool bwOr(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	uint8_t opOne;
+	uint8_t opTwo;
+	uint8_t result;
+	if(inst.mode == RegReg)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->regFile.readReg(inst.operandTwo);
+		pcInc = 1;
+	}
+	else if(inst.mode == RegImm8)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = instBytes[1];
+		pcInc = 2;
+	}
+	else if(inst.mode == RegMem)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		pcInc = 1;
+	}
+	else
+	{
+		return false;
+	}
+	//Execute Instruction
+	result = opOne | opTwo;
+	//Check Zero Flag
+	this->regFile.modifyFlag(Z, result == 0x00);
+	//Set flags
+	this->regFile.modifyFlag(N, false);
+	this->regFile.modifyFlag(H, false);
+	this->regFile.modifyFlag(C, false);
+	//Write Result
+	this->regFile.writeReg(inst.operandOne, result);
+	return true;
 }
 bool Execute::bit(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
