@@ -2,7 +2,7 @@
  *Class - Execute
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 8/17/22
+ *Last Changed - 9/10/22
  *Description - CPU Execution Stage. Decodes Instruction using a Function Pointer lookup table, Reads Operands, and Executes the instructions.
 ====================================================================================*/
 
@@ -165,11 +165,82 @@ bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 }
 bool sub(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
-
+	uint8_t opOne;
+	uint8_t opTwo;
+	uint16_t result;
+	if(inst.mode == RegReg)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->regFile.readReg(inst.operandTwo);
+		pcInc = 1;
+	}
+	else if(inst.mode == RegImm8)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = instBytes[1];
+		pcInc = 2;
+	}
+	else if(inst.mode == RegMem)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		pcInc = 1;
+	}
+	else
+	{
+		return false;
+	}
+	//Execute Instruction
+	result = opOne - opTwo;
+	//Check Half/Full Carry & Zero
+	this->regFile.modifyFlag(C, (opOne & 0x0FF) < (opTwo & 0x0FF));
+	this->regFile.modifyFlag(H, (opOne & 0x00F) < (opTwo & 0x00F));
+	this->regFile.modifyFlag(Z, (result & 0x0FF) == 0x00);
+	//Set Negative
+	this->regFile.modifyFlag(N, true);
+	//Write Result
+	this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
 	return true;
 }
 bool sbc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
+	uint8_t opOne;
+	uint8_t opTwo;
+	uint16_t result;
+	if(inst.mode == RegReg)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->regFile.readReg(inst.operandTwo);
+		pcInc = 1;
+	}
+	else if(inst.mode == RegImm8)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = instBytes[1];
+		pcInc = 2;
+	}
+	else if(inst.mode == RegMem)
+	{
+		opOne = this->regFile.readReg(inst.operandOne);
+		opTwo = this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		pcInc = 1;
+	}
+	else
+	{
+		return false;
+	}
+	//Get carry bit.
+	uint8_t carry = this->regFile.checkFlag(C) ? 0x01 : 0x00;
+	//Execute Instruction
+	result = opOne - (opTwo + carry);
+	//Check Half/Full Carry & Zero
+	this->regFile.modifyFlag(C, (opOne & 0x0FF) < ((opTwo + carry) & 0x0FF));
+	this->regFile.modifyFlag(H, (opOne & 0x00F) < ((opTwo + carry) & 0x00F));
+	this->regFile.modifyFlag(Z, (result & 0x0FF) == 0x00);
+	//Set Negative
+	this->regFile.modifyFlag(N, true);
+	//Write Result
+	this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
 	return true;
 }
 bool bwAnd(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
