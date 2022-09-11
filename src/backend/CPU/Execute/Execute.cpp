@@ -35,7 +35,7 @@
 #include <cstdint>
 
 /*
-TODO 1. Finish add flags 2. Implement program counter increments.
+TODO 1. Fix 16 bit arithmetic half carries.
 */
 
 GbInstruction Execute::decodeInstruction(uint8_t* instructionBytes)
@@ -47,6 +47,11 @@ GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
 
 }
 //Functions to execute each Instruction.
+bool load(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+{
+	//AddressingMode Reg16Imm16, MemReg, MemImm8, RegImm8, MemImm16Reg16, RegMem, RegReg
+}
+
 bool inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint16_t opOne;
