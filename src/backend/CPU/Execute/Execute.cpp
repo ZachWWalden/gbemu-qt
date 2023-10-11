@@ -47,12 +47,59 @@ GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
 
 }
 //Functions to execute each Instruction.
-bool load(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::load(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	//AddressingMode Reg16Imm16, MemReg, MemImm8, RegImm8, MemImm16Reg16, RegMem, RegReg
+	if(inst.mode == RegReg)
+	{
+		//execute Instruction
+		this->regFile.writeReg(inst.operandOne, this->regFile.readReg(inst.operandTwo));
+		pcInc = 1;
+		return true;
+	}
+	else if(inst.mode == RegMem)
+	{
+		//Execute Instruction
+		this->regFile.writeReg(inst.operandOne, this->mem->read(this->regFile.readRegPair(inst.operandTwo)));
+		pcInc = 1;
+		return true;
+	}
+	else if(inst.mode == MemReg)
+	{
+		//Execute Instruction
+		this->mem->write(this->regFile.readRegPair(inst.operandOne),this->regFile.readReg(inst.operandTwo));
+		pcInc = 1;
+		return true;
+	}
+	//LD Reg16, d16
+	else if(inst.mode == Reg16Imm16)
+	{
+		uint16_t imm16 = ((instBytes[2] < 8) & 0x0FF00) | (instBytes[1] & 0x0FF);
+		this->regFile.wirteRegPair(inst.operandOne, imm16);
+		pcInc = 3;
+		return true;
+	}
+	//LD (a16), SP
+	else if(inst.mode == MemImm16Reg16)
+	{
+
+	}
+	else if(inst.mode == RegImm8)
+	{
+		this->regFile.writeReg(inst.operandOne, instBytes[1]);
+		pcInc = 2;
+
+	}
+
+	else
+	{
+		return false;
+	}
+
+
 }
 
-bool inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint16_t opOne;
 	uint16_t result;
@@ -82,7 +129,10 @@ bool inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 		//Carry is unaffected
 		this->regFile.modifyFlag(Z, (result & 0x0FF) ==0);
 		//Half Carry
-		this->regFile.modifyFlag(H, ((opOne & 0x0F) + 1) == 0x10);
+		this->regFile.modifyFlag(H, (((opOne & 0x0F) + 1) == 0x10)); //TODO Add namespace to Regesiters and Operating Modes
+		{
+
+		}
 		//Clear N
 		this->regFile.modifyFlag(N, false);
 	}
