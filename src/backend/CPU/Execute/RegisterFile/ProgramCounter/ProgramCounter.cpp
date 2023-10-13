@@ -1,10 +1,8 @@
 /*==================================================================================
- *Class - RegisterFile
  *Author - Zach Walden
  *Created - 7/22/22
  *Last Changed - 7/25/22
- *Description - Register File, models gameboy. 8 registers A F, B C, D E, H L
- * 		Each 8-bit register may be paired with its
+ *Description - ProgramCounters instructions from the system memory.
 ====================================================================================*/
 
 /*
@@ -31,45 +29,34 @@
  */
 
 #pragma once
-#include "Register/Register.hpp"
 
-#define NUM_REG 8
+#include "ProgramCounter.hpp"
 
-namespace GbRegister
+ ProgramCounter::ProgramCounter()
 {
-enum GbRegister
-{
-	A=0, F=1, B=2, C=3, D=4, E=5, H=6, L=7, AF, BC, DE, HL, SP, PC, NONE
-};
+
 }
-namespace GbFlag
+ ProgramCounter::~ProgramCounter()
 {
-enum GbFlag
-{
-	NONE, Z = 7, N = 6, H = 5, C = 4, T, TI, NZ, NC, PoI, PoD, H00, H08, H10, H18, H20, H28, H30, H38, B0, B1, B2, B3, B4, B5, B6, B7
-};
+
 }
 
-class RegisterFile
+uint16_t ProgramCounter::read()
 {
-	//Attributes
-public:
+	return this->value;
+}
+void ProgramCounter::write(uint16_t newValue)
+{
+	this->value = newValue;
+}
+void ProgramCounter::increment(uint8_t incValue)
+{
+	this->value += incValue;
+}
 
-private:
-	Register regFile[NUM_REG];
-	uint16_t sp;
-	//Methods
-public:
-	RegisterFile();
-	~RegisterFile();
+/*
+<++> ProgramCounter::<++>()
+{
 
-	uint8_t readReg(GbRegister::GbRegister reg);
-	void writeReg(GbRegister::GbRegister reg, uint8_t newValue);
-
-	uint16_t readRegPair(GbRegister::GbRegister regPair);
-	void wirteRegPair(GbRegister::GbRegister regPair, uint16_t newValue);
-
-	void modifyFlag(GbFlag::GbFlag flag, bool newVal);
-	bool checkFlag(GbFlag::GbFlag flag);
-private:
-};
+}
+*/
