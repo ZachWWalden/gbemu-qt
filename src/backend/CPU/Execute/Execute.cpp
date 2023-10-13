@@ -40,11 +40,17 @@ TODO 1. Fix 16 bit arithmetic half carries.
 
 GbInstruction Execute::decodeInstruction(uint8_t* instructionBytes)
 {
-
+	return this->instDec[instructionBytes[0]];
 }
-GbInstruction Execute::decodePrefixInstruction(uint8_t* instructionBytes)
+bool Execute::decodePrefixInstruction(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
-
+	GbInstruction  inststruction = ((Execute*)instance)->prefixInstDec[instBytes[1]];
+	if(!(inststruction.execFunction(instance, inststruction, instBytes, pcInc)))
+	{
+		LOG("EXECUTE: Prefix instruction errored");
+		return false;
+	}
+	return true;
 }
 //Functions to execute each Instruction.
 bool Execute::load(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
