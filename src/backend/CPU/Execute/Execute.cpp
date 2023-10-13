@@ -32,6 +32,7 @@
 #pragma once
 
 #include "Execute.hpp"
+#include "RegisterFile/RegisterFile.hpp"
 #include <cstdint>
 
 /*
@@ -53,59 +54,91 @@ bool Execute::decodePrefixInstruction(void* instance, GbInstruction inst, uint8_
 	return true;
 }
 //Functions to execute each Instruction.
-bool Execute::load(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
-	//AddressingMode Reg16Imm16, MemReg, MemImm8, RegImm8, MemImm16Reg16, RegMem, RegReg
-	if(inst.mode == RegReg)
-	{
-		//execute Instruction
-		this->regFile.writeReg(inst.operandOne, this->regFile.readReg(inst.operandTwo));
-		pcInc = 1;
-		return true;
-	}
-	else if(inst.mode == RegMem)
-	{
-		//Execute Instruction
-		this->regFile.writeReg(inst.operandOne, this->mem->read(this->regFile.readRegPair(inst.operandTwo)));
-		pcInc = 1;
-		return true;
-	}
-	else if(inst.mode == MemReg)
-	{
-		//Execute Instruction
-		this->mem->write(this->regFile.readRegPair(inst.operandOne),this->regFile.readReg(inst.operandTwo));
-		pcInc = 1;
-		return true;
-	}
-	//LD Reg16, d16
-	else if(inst.mode == Reg16Imm16)
-	{
-		uint16_t imm16 = ((instBytes[2] < 8) & 0x0FF00) | (instBytes[1] & 0x0FF);
-		this->regFile.wirteRegPair(inst.operandOne, imm16);
-		pcInc = 3;
-		return true;
-	}
-	//LD (a16), SP
-	else if(inst.mode == MemImm16Reg16)
+	Execute* thees = (Execute*) instance;
+	uint16_t opOne, address, opTwo;
+
+	//Reg Source:MemReg_Reg,  Reg_Reg,  MemImm8_Reg,  MemReg16_Reg
+	if(inst.mode == MemReg_Reg || inst.mode == Reg_Reg || inst.mode == MemImm8_Reg || inst.mode == MemReg16_Reg)
 	{
 
 	}
-	else if(inst.mode == RegImm8)
+	//Reg16 source: MemImm16_Reg16  Reg16_Reg16 MemReg16_Reg16
+	else if (inst.mode == MemImm16_Reg16 || inst.mode == Reg16_Reg16 || inst.mode == MemReg16_Reg16)
 	{
-		this->regFile.writeReg(inst.operandOne, instBytes[1]);
-		pcInc = 2;
 
 	}
+	//Imm8 source: Reg_Imm8 MemReg16_Imm8
+	else if (inst.mode == Reg_Imm8 || inst.mode == MemReg16_Imm8) {
 
+	}
+	//Reg16_Reg16Sim8
+	else if (inst.mode == Reg16_Reg16Sim8) {
+
+	}
+	//Imm16 source: Reg16_Imm16
+	else if (inst.mode == Reg16_Imm16) {
+
+	}
+	//MemReg: Source: Reg_MemReg
+	else if (inst.mode == Reg_MemReg) {
+
+	}
+	//MemReg16: Source: Reg_MemReg16 Reg16_MemReg16
+	else if (inst.mode == Reg_MemReg16 || inst.mode == Reg16_MemReg16) {
+		//get source Register
+		address = thees->regFile.readRegPair(inst.operandTwo);
+		opOne = thees->mem->read(address);
+		//Check to see if there are post increments/decrements
+		if(inst.condition == GbFlag::GbFlag::PoI)
+		{
+
+		}
+		else if (inst.condition == GbFlag::GbFlag::PoD)
+		{
+
+		}
+
+	}
+	else if (inst.mode == Reg_MemImm8) {
+
+	}
+	else if (inst.mode == Reg_MemImm16) {
+
+	}
 	else
 	{
 		return false;
 	}
+	//Reg dest:Reg_Reg Reg_Imm8  Reg_MemReg Reg_MemReg16  Reg_MemImm8 Reg_MemImm16
+	if(inst.mode == Reg_Reg || inst.mode == Reg_Imm8 || inst.mode == Reg_MemReg || inst.mode == Reg_MemReg16 || inst.mode == Reg_MemImm8 || inst.mode == Reg_MemImm16){
 
+	}
+	//Reg16 dest:Reg16_Reg16 Reg16_Reg16Sim8 Reg16_Imm16 Reg16_MemReg16
+	else if (inst.mode == Reg16_Reg16 || inst.mode == Reg16_Reg16Sim8 || inst.mode == Reg16_Imm16 || inst.mode == Reg16_MemReg16) {
+
+	}
+	// MemReg det:MemReg_Reg
+	else if (inst.mode == MemReg_Reg) {
+
+	}
+	// MemReg16 dest: MemReg16_Reg MemReg16_Reg16 MemReg16_Imm8
+	else if (inst.mode == MemReg16_Reg || inst.mode == MemReg16_Reg16 || inst.mode == MemReg16_Imm8) {
+
+	}
+	// MemImm8 dest:MemImm8_Reg
+	else if (inst.mode == MemImm8_Reg) {
+
+	}
+	// MemImm16 dest:MemImm16_Reg16
+	else if (inst.mode == MemImm16_Reg16) {
+
+	}
 
 }
 
-bool Execute::inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::inc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint16_t opOne;
 	uint16_t result;
@@ -158,7 +191,7 @@ bool Execute::inc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	}
 	return true;
 }
-bool dec(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)bool Execute::add(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool dec(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)bool Execute::add(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint16_t opOne;
 	uint16_t result;
@@ -282,7 +315,7 @@ bool dec(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)bool Execute::ad
 	}
 	return true;
 }
-bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool adc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint8_t opOne;
 	uint8_t opTwo;
@@ -324,7 +357,7 @@ bool adc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0xFF));
 	return true;
 }
-bool sub(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool sub(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint8_t opOne;
 	uint8_t opTwo;
@@ -366,7 +399,7 @@ bool sub(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	}
 	return true;
 }
-bool sbc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool sbc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint8_t opOne;
 	uint8_t opTwo;
@@ -407,7 +440,7 @@ bool sbc(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
 	return true;
 }
-bool bwAnd(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool bwAnd(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint8_t opOne;
 	uint8_t opTwo;
@@ -446,7 +479,7 @@ bool bwAnd(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	this->regFile.writeReg(inst.operandOne, result);
 	return true;
 }
-bool bwXor(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool bwXor(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint8_t opOne;
 	uint8_t opTwo;
@@ -485,7 +518,7 @@ bool bwXor(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	this->regFile.writeReg(inst.operandOne, result);
 	return true;
 }
-bool bwOr(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool bwOr(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	uint8_t opOne;
 	uint8_t opTwo;
@@ -524,7 +557,7 @@ bool bwOr(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	this->regFile.writeReg(inst.operandOne, result);
 	return true;
 }
-bool Execute::bit(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::bit(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
@@ -559,7 +592,7 @@ bool Execute::bit(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	pcInc = 2;
 	return true;
 }
-bool Execute::res(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::res(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
@@ -602,7 +635,7 @@ bool Execute::res(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	pcInc = 2;
 	return true;
 }
-bool Execute::set(GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::set(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;

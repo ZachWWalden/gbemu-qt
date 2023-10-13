@@ -3,7 +3,7 @@
  *Author - Zach Walden
  *Created - 7/22/22
  *Last Changed - 7/25/22
- *Description - 16-bit register. Used for stack pointer and the program counter.
+ *Description - Stack Pointer, has dedicated functions to call when pushing/Popping the PC and pair registers.
 ====================================================================================*/
 
 /*
@@ -30,40 +30,24 @@
  */
 
 #pragma once
+#include "stdint.h"
 
-#include "StackPointer.hpp"
-
- StackPointer::StackPointer()
+class StackPointer
 {
+	//Attributes
+public:
 
-}
+private:
+	uint16_t value;
+	//Methods
+public:
+	StackPointer();
+	~StackPointer();
 
- StackPointer::~StackPointer()
-{
+	uint16_t read();
+	void write(uint16_t);
+	void increment();
+	void decrement();
 
-}
-
-uint16_t StackPointer::readReg()
-{
-	return this->value;
-}
-
-void StackPointer::writeReg(uint16_t newValue)
-{
-	this->value = newValue;
-}
-void StackPointer::increment(uint16_t newValue)
-{
-	this->value += 1;
-}
-void StackPointer::decrement(uint16_t newValue)
-{
-	this->value -= 1;
-}
-
-/*
-<++> StackPointer::<++>()
-{
-
-}
-*/
+private:
+};

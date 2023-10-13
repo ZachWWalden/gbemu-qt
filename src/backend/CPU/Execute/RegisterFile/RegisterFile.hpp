@@ -2,7 +2,7 @@
  *Class - RegisterFile
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/25/22
+ *Last Changed - 10/13/23
  *Description - Register File, models gameboy. 8 registers A F, B C, D E, H L
  * 		Each 8-bit register may be paired with its
 ====================================================================================*/
@@ -32,6 +32,9 @@
 
 #pragma once
 #include "Register/Register.hpp"
+#include "ProgramCounter/ProgramCounter.hpp"
+#include "StackPointer/StackPointer.hpp"
+#include <cstdint>
 
 #define NUM_REG 8
 
@@ -57,7 +60,8 @@ public:
 
 private:
 	Register regFile[NUM_REG];
-	uint16_t sp;
+	ProgramCounter pc;
+	StackPointer sp;
 	//Methods
 public:
 	RegisterFile();
@@ -67,7 +71,11 @@ public:
 	void writeReg(GbRegister::GbRegister reg, uint8_t newValue);
 
 	uint16_t readRegPair(GbRegister::GbRegister regPair);
-	void wirteRegPair(GbRegister::GbRegister regPair, uint16_t newValue);
+	void writeRegPair(GbRegister::GbRegister regPair, uint16_t newValue);
+
+	void incPc(uint8_t incVal);
+	void incSp();
+	void decSp();
 
 	void modifyFlag(GbFlag::GbFlag flag, bool newVal);
 	bool checkFlag(GbFlag::GbFlag flag);

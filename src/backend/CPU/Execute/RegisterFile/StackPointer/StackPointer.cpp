@@ -30,25 +30,40 @@
  */
 
 #pragma once
-#include "stdint.h"
-using namespace std;
 
-class StackPointer
+#include "StackPointer.hpp"
+
+ StackPointer::StackPointer()
 {
-	//Attributes
-public:
 
-private:
-	uint16_t value
-	//Methods
-public:
-	StackPointer();
-	~StackPointer();
+}
 
-	uint16_t readReg();
-	void writeReg(uint16_t);
-	void increment();
-	void decrement();
+ StackPointer::~StackPointer()
+{
 
-private:
-};
+}
+
+uint16_t StackPointer::read()
+{
+	return this->value;
+}
+
+void StackPointer::write(uint16_t newValue)
+{
+	this->value = newValue;
+}
+void StackPointer::increment()
+{
+	this->value += 2;
+}
+void StackPointer::decrement()
+{
+	this->value -= 2;
+}
+
+/*
+<++> StackPointer::<++>()
+{
+
+}
+*/

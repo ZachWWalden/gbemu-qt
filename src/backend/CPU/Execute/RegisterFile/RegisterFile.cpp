@@ -2,7 +2,7 @@
  *Class - RegisterFile
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 7/25/22
+ *Last Changed - 10/13/23
  *Description - GameBoy Register File Implementation.
 ====================================================================================*/
 
@@ -45,110 +45,145 @@ using namespace std;
 
 }
 
-uint8_t RegisterFile::readReg(GbRegister reg)
+uint8_t RegisterFile::readReg(GbRegister::GbRegister reg)
 {
-	return this->regFile[reg].readReg()
+	return this->regFile[reg].readReg();
 }
 
-void RegisterFile::writeReg(GbRegister reg, uint8_t newValue)
+void RegisterFile::writeReg(GbRegister::GbRegister reg, uint8_t newValue)
 {
 	this->regFile[reg].writeReg(newValue);
 }
 
-uint16_t RegisterFile::readRegPair(GbRegister regPair)
+uint16_t RegisterFile::readRegPair(GbRegister::GbRegister regPair)
 {
-	GbRegister readVals[2];
+	GbRegister::GbRegister reg1, reg2;
 	bool sp = false;
 	uint16_t retVal;
 	switch(regPair)
 	{
-		case AF :
+		case GbRegister::AF :
 		{
-			readVals = {A, F};
+			reg1 = GbRegister::A;
+			reg2 = GbRegister::F;
 			break;
 		}
-		case BC :
+		case GbRegister::BC :
 		{
-			readVals = {B, C};
+			reg1 = GbRegister::B;
+			reg2 = GbRegister::C;
 			break;
 		}
-		case DE :
+		case GbRegister::DE :
 		{
-			readVals = {D, E};
+			reg1 = GbRegister::D;
+			reg2 = GbRegister::E;
 			break;
 		}
-		case HL :
+		case GbRegister::HL :
 		{
-			readVals = {H, L};
+			reg1 = GbRegister::H;
+			reg2 = GbRegister::L;
 			break;
 		}
-		case SP :
-
+		case GbRegister::SP :
 		{
-			retVal = this->sp;
+			retVal = this->sp.read();
 			sp = true;
 			break;
 		}
-		case default : break;
+		case GbRegister::PC :
+		{
+			retVal = this->pc.read();
+			sp = true;
+			break;
+		}
+		default :
+		{
+			break;
+		}
 	}
 	if(!sp)
 	{
-		retVal = ((readVals[0] << 8) & 0x0FF00) | (readVals[1] & 0x0FF);
+		retVal = ((this->readReg(reg1) << 8) & 0x0FF00) | (this->readReg(reg2) & 0x0FF);
 	}
 	return retVal;
 }
 
-void RegisterFile::wirteRegPair(GbRegister regPair, uint16_t newValue)
+void RegisterFile::writeRegPair(GbRegister::GbRegister regPair, uint16_t newValue)
 {
-	GbRegister writeVals[2];
+	GbRegister::GbRegister reg1, reg2;
 	bool sp = false;
 	switch(regPair)
 	{
-		case AF :
+		case GbRegister::AF :
 		{
-			writeVals = {A, F};
+			reg1 = GbRegister::A;
+			reg2 = GbRegister::F;
 			break;
 		}
-		case BC :
+		case GbRegister::BC :
 		{
-			writeVals = {B, C};
+			reg1 = GbRegister::B;
+			reg2 = GbRegister::C;
 			break;
 		}
-		case DE :
+		case GbRegister::DE :
 		{
-			writeVals = {D, E};
+			reg1 = GbRegister::D;
+			reg2 = GbRegister::E;
 			break;
 		}
-		case HL :
+		case GbRegister::HL :
 		{
-			writeVals = {H, L};
+			reg1 = GbRegister::H;
+			reg2 = GbRegister::L;
 			break;
 		}
-		case SP :
+		case GbRegister::SP :
 		{
-			this->sp = newVal;
+			this->sp.write(newValue);
 			sp = true;
 			break;
 		}
-		case default : break;
+		case GbRegister::PC :
+		{
+			this->pc.write(newValue);
+			sp = true;
+			break;
+		}
+		default : break;
 	}
 	if(!sp)
 	{
-		this->writeReg(writeVals[0], (newValue >> 8) & 0x00FF);
-		this->writeReg(writeVals[1], newValue & 0x00FF);
+		this->writeReg(reg1, (newValue >> 8) & 0x00FF);
+		this->writeReg(reg2, newValue & 0x00FF);
 	}
 }
 
-void RegisterFile::modifyFlag(GbFlag flag, bool newVal)
+void RegisterFile::incPc(uint8_t incVal)
+{
+	this->pc.increment(incVal);
+}
+void RegisterFile::incSp()
+{
+	this->sp.increment();
+}
+void RegisterFile::decSp()
+{
+	this->sp.decrement();
+}
+
+void RegisterFile::modifyFlag(GbFlag::GbFlag flag, bool newVal)
 {
 	//read flags
-	uint8_t flags = this->readReg(F);
+	uint8_t flags = this->readReg(GbRegister::F);
 	//modify flags
 	uint8_t modVal;
 	if(newVal)
 	{
 		modVal = 0x00 | 1 << flag;
-		flags = flags | modVal
+		flags = flags | modVal;
 	}
 	else
 	{
@@ -156,12 +191,12 @@ void RegisterFile::modifyFlag(GbFlag flag, bool newVal)
 		flags = flags & modVal;
 	}
 	//write flags
-	this->writeReg(F, flags);
+	this->writeReg(GbRegister::F, flags);
 }
 
-bool RegisterFile::checkFlag(GbFlag flag)
+bool RegisterFile::checkFlag(GbFlag::GbFlag flag)
 {
-	uint8_t flags = this->readReg(F);
+	uint8_t flags = this->readReg(GbRegister::F);
 	uint8_t val = (flags >> flag) & 0x01;
 	bool retVal = false;
 	if(val == 1)

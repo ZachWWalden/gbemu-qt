@@ -30,6 +30,8 @@
 
 #pragma once
 
+#include <stdint.h>
+
 #include "ProgramCounter.hpp"
 
  ProgramCounter::ProgramCounter()
