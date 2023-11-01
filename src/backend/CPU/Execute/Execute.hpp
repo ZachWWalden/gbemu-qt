@@ -93,7 +93,7 @@ GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::LD, GbRegister::GbRegister
 GbInstruction(AddressingMode::Reg_None, CpuOperation::RLCA, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, Execute::rotate),							//RLCA: 1B, 4C, 000C, TODO
 GbInstruction(AddressingMode::MemImm16_Reg16, CpuOperation::LD, GbRegister::GbRegister::NONE, GbRegister::GbRegister::SP, Execute::load),						//LD (a16), SP: 3B 20C, ----, TODO
 GbInstruction(AddressingMode::Reg16_Reg16, CpuOperation::ADD, GbRegister::GbRegister::HL, GbRegister::GbRegister::BC, Execute::add),							//ADD HL, BC: 1B 8C, -0HC
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::LD, GbRegister::GbRegister::A, GbRegister::GbRegister::BC, Execute::load),							//LD A, (BC): 1B 8C, ----, TODO
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::LD, GbRegister::GbRegister::A, GbRegister::GbRegister::BC, Execute::load, GbFlag::GbFlag::NONE),		//LD A, (BC): 1B 8C, ----, TODO
 GbInstruction(AddressingMode::Reg16_NONE, CpuOperation::DEC, GbRegister::GbRegister::BC, GbRegister::GbRegister::NONE, Execute::dec),							//DEC BC: 1B 8C, ----
 GbInstruction(AddressingMode::Reg_None, CpuOperation::INC, GbRegister::GbRegister::C, GbRegister::GbRegister::NONE, Execute::inc),								//INC C: 1B, 4C, Z0H-
 GbInstruction(AddressingMode::Reg_None, CpuOperation::DEC, GbRegister::GbRegister::C, GbRegister::GbRegister::NONE, Execute::dec),								//DEC C: 1B, 4C, Z1H-
@@ -110,7 +110,7 @@ GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::LD, GbRegister::GbRegister
 GbInstruction(AddressingMode::Reg_None, CpuOperation::RLA, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, Execute::rotate),							//RLA: 1B 4C, 000C, TODO
 GbInstruction(AddressingMode::Reg16_Simm8, CpuOperation::JR, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, Execute::jr, GbFlag::GbFlag::T),			//JR r8: 2B 12C, ----, TODO
 GbInstruction(AddressingMode::Reg16_Reg16, CpuOperation::ADD, GbRegister::GbRegister::HL, GbRegister::GbRegister::DE, Execute::add),							//ADD HL, DE: 1B 8C, -0HC
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::LD, GbRegister::GbRegister::A, GbRegister::GbRegister::DE, Execute::load),							//LD A, (DE): 1B 8C, ----, TODO
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::LD, GbRegister::GbRegister::A, GbRegister::GbRegister::DE, Execute::load, GbFlag::GbFlag::NONE),		//LD A, (DE): 1B 8C, ----, TODO
 GbInstruction(AddressingMode::Reg16_NONE, CpuOperation::DEC, GbRegister::GbRegister::DE, GbRegister::GbRegister::NONE, Execute::dec),							//DEC DE: 1B 8C, ----
 GbInstruction(AddressingMode::Reg_None, CpuOperation::INC, GbRegister::GbRegister::E, GbRegister::GbRegister::NONE, Execute::inc),								//INC E: 1B, 4C, Z0H-
 GbInstruction(AddressingMode::Reg_None, CpuOperation::DEC, GbRegister::GbRegister::E, GbRegister::GbRegister::NONE, Execute::dec),								//DEC E: 1B, 4C, Z1H-

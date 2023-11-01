@@ -2,7 +2,7 @@
  *Class - RegisterFile
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 10/13/23
+ *Last Changed - 10/17/23
  *Description - Register File, models gameboy. 8 registers A F, B C, D E, H L
  * 		Each 8-bit register may be paired with its
 ====================================================================================*/
@@ -76,6 +76,9 @@ public:
 	void incPc(uint8_t incVal);
 	void incSp();
 	void decSp();
+
+	void incRegPair(GbRegister::GbRegister regPair);
+	void decRegPair(GbRegister::GbRegister regPair);
 
 	void modifyFlag(GbFlag::GbFlag flag, bool newVal);
 	bool checkFlag(GbFlag::GbFlag flag);

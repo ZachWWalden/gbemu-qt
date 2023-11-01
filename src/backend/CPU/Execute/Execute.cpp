@@ -2,7 +2,7 @@
  *Class - Execute
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 9/10/22
+ *Last Changed - 10/13/23
  *Description - CPU Execution Stage. Decodes Instruction using a Function Pointer lookup table, Reads Operands, and Executes the instructions.
 ====================================================================================*/
 
@@ -62,78 +62,121 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8
 	//Reg Source:MemReg_Reg,  Reg_Reg,  MemImm8_Reg,  MemReg16_Reg
 	if(inst.mode == MemReg_Reg || inst.mode == Reg_Reg || inst.mode == MemImm8_Reg || inst.mode == MemReg16_Reg)
 	{
-
+		opTwo = thees->regFile.readReg(inst.operandTwo) & 0x00FF;
 	}
 	//Reg16 source: MemImm16_Reg16  Reg16_Reg16 MemReg16_Reg16
 	else if (inst.mode == MemImm16_Reg16 || inst.mode == Reg16_Reg16 || inst.mode == MemReg16_Reg16)
 	{
-
+		opTwo = thees->regFile.readRegPair(inst.operandTwo);
 	}
 	//Imm8 source: Reg_Imm8 MemReg16_Imm8
 	else if (inst.mode == Reg_Imm8 || inst.mode == MemReg16_Imm8) {
-
+		opTwo = instBytes[1];
 	}
 	//Reg16_Reg16Sim8
 	else if (inst.mode == Reg16_Reg16Sim8) {
-
+		opTwo = thees->regFile.readRegPair(inst.operandTwo);
+		//Sign extend immeadiate
+		opOne = ((instBytes[1] & 0x80) == 0x80) ? (instBytes[1]) | 0xFF00 : instBytes[1] & 0x00FF;
 	}
 	//Imm16 source: Reg16_Imm16
 	else if (inst.mode == Reg16_Imm16) {
-
+		opTwo = ((instBytes[2] << 8) & 0xFF00) | (instBytes[1] & 0xFF00);
 	}
 	//MemReg: Source: Reg_MemReg
 	else if (inst.mode == Reg_MemReg) {
-
+		opTwo = thees->mem->read(0xFF00 | thees->regFile.readReg(inst.operandTwo));
 	}
 	//MemReg16: Source: Reg_MemReg16 Reg16_MemReg16
 	else if (inst.mode == Reg_MemReg16 || inst.mode == Reg16_MemReg16) {
 		//get source Register
 		address = thees->regFile.readRegPair(inst.operandTwo);
-		opOne = thees->mem->read(address);
+		opTwo = thees->mem->read(address);
 		//Check to see if there are post increments/decrements
 		if(inst.condition == GbFlag::GbFlag::PoI)
 		{
-
+			if (inst.op == POP)
+			{
+				//if a pop read the next byte. low byte, low address, high byte high address.
+				opTwo = ((thees->mem->read(address + 1) << 8) & 0xFF00) | opTwo;
+				thees->regFile.incSp();
+			}
+			else {
+				thees->regFile.incRegPair(inst.operandTwo);
+			}
 		}
 		else if (inst.condition == GbFlag::GbFlag::PoD)
 		{
-
+			thees->regFile.decRegPair(inst.operandTwo);
 		}
 
 	}
 	else if (inst.mode == Reg_MemImm8) {
-
+		opTwo = thees->mem->read(0xFF00 | instBytes[1]);
 	}
 	else if (inst.mode == Reg_MemImm16) {
-
+		//Little Endian
+		address = ((instBytes[2] << 8) & 0xFF00) | (instBytes[1] & 0xFF00);
+		opTwo = thees->mem->read(address);
 	}
 	else
 	{
 		return false;
 	}
+	//store
 	//Reg dest:Reg_Reg Reg_Imm8  Reg_MemReg Reg_MemReg16  Reg_MemImm8 Reg_MemImm16
 	if(inst.mode == Reg_Reg || inst.mode == Reg_Imm8 || inst.mode == Reg_MemReg || inst.mode == Reg_MemReg16 || inst.mode == Reg_MemImm8 || inst.mode == Reg_MemImm16){
-
+		thees->regFile.writeReg(inst.operandOne, opTwo & 0x00FF);
 	}
 	//Reg16 dest:Reg16_Reg16 Reg16_Reg16Sim8 Reg16_Imm16 Reg16_MemReg16
 	else if (inst.mode == Reg16_Reg16 || inst.mode == Reg16_Reg16Sim8 || inst.mode == Reg16_Imm16 || inst.mode == Reg16_MemReg16) {
-
+		thees->regFile.writeRegPair(inst.operandOne, opTwo);
 	}
 	// MemReg det:MemReg_Reg
 	else if (inst.mode == MemReg_Reg) {
-
+		thees->mem->write(0xFF00 | thees->regFile.readReg(inst.operandOne), opTwo);
 	}
 	// MemReg16 dest: MemReg16_Reg MemReg16_Reg16 MemReg16_Imm8
 	else if (inst.mode == MemReg16_Reg || inst.mode == MemReg16_Reg16 || inst.mode == MemReg16_Imm8) {
+		//Check for PoI, PoD, and Push
+		address = thees->regFile.readRegPair(inst.operandOne);
+		if(inst.condition == GbFlag::GbFlag::PoI)
+		{
+			thees->mem->write(address, opTwo);
+			thees->regFile.incRegPair(inst.operandTwo);
+		}
+		else if (inst.condition == GbFlag::GbFlag::PoD)
+		{
+			if (inst.op == PUSH)
+			{
+				//opTwo is a reg 16 high byte goes up fist.
+				thees->mem->write(address, (opTwo >> 8) & 0x00FF);
+				thees->mem->write(address - 1, opTwo & 0x00FF);
+				thees->regFile.decSp();
+			}
+			else {
+				thees->mem->write(address, opTwo);
+				thees->regFile.decRegPair(inst.operandTwo);
+			}
+		}
+		else {
 
+			thees->mem->write(address, opTwo);
+		}
 	}
 	// MemImm8 dest:MemImm8_Reg
 	else if (inst.mode == MemImm8_Reg) {
-
+		thees->mem->write(0xFF00 | instBytes[1], opTwo);
 	}
 	// MemImm16 dest:MemImm16_Reg16
 	else if (inst.mode == MemImm16_Reg16) {
-
+		//2 byte store
+		address = ((instBytes[2] << 8) & 0xFF00) | instBytes[1] & 0x00FF;
+		thees->mem->write(address, opTwo & 0x00FF);
+		thees->mem->write(address + 1, (opTwo >> 8) & 0x00FF);
+	}
+	else {
+		return false;
 	}
 
 }

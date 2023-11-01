@@ -32,6 +32,7 @@
 #pragma once
 
 #include "RegisterFile.hpp"
+#include <cstdint>
 
 using namespace std;
 
@@ -159,6 +160,20 @@ void RegisterFile::writeRegPair(GbRegister::GbRegister regPair, uint16_t newValu
 		this->writeReg(reg1, (newValue >> 8) & 0x00FF);
 		this->writeReg(reg2, newValue & 0x00FF);
 	}
+}
+
+void RegisterFile::incRegPair(GbRegister::GbRegister regPair)
+{
+	uint16_t reg = this->readRegPair(regPair);
+	reg++;
+	this->writeRegPair(regPair, reg);
+}
+
+void RegisterFile::decRegPair(GbRegister::GbRegister regPair)
+{
+	uint16_t reg = this->readRegPair(regPair);
+	reg--;
+	this->writeRegPair(regPair, reg);
 }
 
 void RegisterFile::incPc(uint8_t incVal)
