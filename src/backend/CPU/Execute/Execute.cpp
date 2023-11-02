@@ -58,7 +58,7 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8
 {
 	Execute* thees = (Execute*) instance;
 	uint16_t opOne, address, opTwo;
-
+	pcInc = 1;
 	//Reg Source:MemReg_Reg,  Reg_Reg,  MemImm8_Reg,  MemReg16_Reg
 	if(inst.mode == MemReg_Reg || inst.mode == Reg_Reg || inst.mode == MemImm8_Reg || inst.mode == MemReg16_Reg)
 	{
@@ -72,16 +72,19 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8
 	//Imm8 source: Reg_Imm8 MemReg16_Imm8
 	else if (inst.mode == Reg_Imm8 || inst.mode == MemReg16_Imm8) {
 		opTwo = instBytes[1];
+		pcInc = 2;
 	}
 	//Reg16_Reg16Sim8
 	else if (inst.mode == Reg16_Reg16Sim8) {
 		opTwo = thees->regFile.readRegPair(inst.operandTwo);
 		//Sign extend immeadiate
 		opOne = ((instBytes[1] & 0x80) == 0x80) ? (instBytes[1]) | 0xFF00 : instBytes[1] & 0x00FF;
+		pcInc = 2;
 	}
 	//Imm16 source: Reg16_Imm16
 	else if (inst.mode == Reg16_Imm16) {
 		opTwo = ((instBytes[2] << 8) & 0xFF00) | (instBytes[1] & 0xFF00);
+		pcInc = 3;
 	}
 	//MemReg: Source: Reg_MemReg
 	else if (inst.mode == Reg_MemReg) {
@@ -113,11 +116,13 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8
 	}
 	else if (inst.mode == Reg_MemImm8) {
 		opTwo = thees->mem->read(0xFF00 | instBytes[1]);
+		pcInc = 2;
 	}
 	else if (inst.mode == Reg_MemImm16) {
 		//Little Endian
 		address = ((instBytes[2] << 8) & 0xFF00) | (instBytes[1] & 0xFF00);
 		opTwo = thees->mem->read(address);
+		pcInc = 3;
 	}
 	else
 	{
@@ -167,6 +172,7 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8
 	// MemImm8 dest:MemImm8_Reg
 	else if (inst.mode == MemImm8_Reg) {
 		thees->mem->write(0xFF00 | instBytes[1], opTwo);
+		pcInc = 2;
 	}
 	// MemImm16 dest:MemImm16_Reg16
 	else if (inst.mode == MemImm16_Reg16) {
@@ -174,6 +180,7 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8
 		address = ((instBytes[2] << 8) & 0xFF00) | instBytes[1] & 0x00FF;
 		thees->mem->write(address, opTwo & 0x00FF);
 		thees->mem->write(address + 1, (opTwo >> 8) & 0x00FF);
+		pcInc = 3;
 	}
 	else {
 		return false;
@@ -183,22 +190,23 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8
 
 bool Execute::inc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
+	Execute* thees = (Execute*)instance;
 	uint16_t opOne;
 	uint16_t result;
 	pcInc = 1;
 	//Fetch Operands
-	if(inst.mode == RegNone)
+	if(inst.mode == Reg_None)
 	{
-		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opOne = 0x00FF & thees->regFile.readReg(inst.operandOne);
 	}
-	else if(inst.mode == MemNone)
+	else if(inst.mode == MemReg16_None)
 	{
-		opOne = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		opOne = 0x00FF & thees->mem->read(thees->regFile.readRegPair(inst.operandTwo));
 	}
-	else if(inst.mode == Reg16None)
+	else if(inst.mode == Reg16_None)
 	{
 		//Signed immeadiate must be sign extended to at least 16 bits.
-		opOne = this->regFile.readRegPair(inst.operandOne);
+		opOne = thees->regFile.readRegPair(inst.operandOne);
 	}
 	else
 	{
@@ -206,52 +214,53 @@ bool Execute::inc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_
 	}
 	result = opOne + 0x01;
 	//16-bit INC/DEC does not affect the flags.
-	if(inst.mode != Reg16None)
+	if(inst.mode != Reg16_None)
 	{
 		//Carry is unaffected
-		this->regFile.modifyFlag(Z, (result & 0x0FF) ==0);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::Z, (result & 0x0FF) ==0);
 		//Half Carry
-		this->regFile.modifyFlag(H, (((opOne & 0x0F) + 1) == 0x10)); //TODO Add namespace to Regesiters and Operating Modes
-		{
-
-		}
+		thees->regFile.modifyFlag(GbFlag::GbFlag::H, (((opOne & 0x0F) + 1) == 0x10));
 		//Clear N
-		this->regFile.modifyFlag(N, false);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::N, false);
 	}
 	//Write Back
-	if(inst.mode == RegNone)
+	if(inst.mode == Reg_None)
 	{
-		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
+		thees->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
 	}
-	else if(inst.mode == MemNone)
+	else if(inst.mode == Mem_None)
 	{
-		this->mem->write(this->regFile.readRegPair(inst.operandTwo), (uint8_t)(result & 0x0FF));
+		thees->mem->write(thees->regFile.readRegPair(inst.operandTwo), (uint8_t)(result & 0x0FF));
 	}
-	else
+	else if(inst.mode == Reg16_None)
 	{
 		//Signed immeadiate must be sign extended to at least 16 bits.
-		this->regFile.writeRegPair(inst.operandOne, result);
+		thees->regFile.writeRegPair(inst.operandOne, result);
+	}
+	else {
+		return false;
 	}
 	return true;
 }
-bool dec(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)bool Execute::add(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
+bool Execute::dec(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
+	Execute* thees = (Execute*)instance;
 	uint16_t opOne;
 	uint16_t result;
 	pcInc = 1;
 	//Fetch Operands
-	if(inst.mode == RegNone)
+	if(inst.mode == Reg_None)
 	{
-		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opOne = 0x00FF & thees->regFile.readReg(inst.operandOne);
 	}
-	else if(inst.mode == MemNone)
+	else if(inst.mode == Mem_None)
 	{
-		opOne = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		opOne = 0x00FF & thees->mem->read(thees->regFile.readRegPair(inst.operandTwo));
 	}
-	else if(inst.mode == Reg16None)
+	else if(inst.mode == Reg16_None)
 	{
 		//Signed immeadiate must be sign extended to at least 16 bits.
-		opOne = this->regFile.readRegPair(inst.operandOne);
+		opOne = thees->regFile.readRegPair(inst.operandOne);
 	}
 	else
 	{
@@ -259,63 +268,65 @@ bool dec(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	}
 	result = opOne - 0x01;
 	//16-bit INC/DEC does not affect the flags.
-	if(inst.mode != Reg16None)
+	if(inst.mode != Reg16_None)
 	{
 		//Carry is unaffected
-		this->regFile.modifyFlag(Z, (result & 0x0FF) ==0);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::Z, (result & 0x0FF) ==0);
 		//Half Carry
-		this->regFile.modifyFlag(H, (opOne & 0x0F) < 0x01 );
+		thees->regFile.modifyFlag(GbFlag::GbFlag::H, (opOne & 0x0F) < 0x01 );
 		//Clear N
-		this->regFile.modifyFlag(N, true);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::N, true);
 	}
 	//Write Back
-	if(inst.mode == RegNone)
+	if(inst.mode == Reg_None)
 	{
-		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
+		thees->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x0FF));
 	}
-	else if(inst.mode == MemNone)
+	else if(inst.mode == Mem_None)
 	{
-		this->mem->write(this->regFile.readRegPair(inst.operandTwo), (uint8_t)(result & 0x0FF));
+		thees->mem->write(thees->regFile.readRegPair(inst.operandTwo), (uint8_t)(result & 0x0FF));
 	}
-	else
+	else if(inst.mode == Reg16_None)
 	{
 		//Signed immeadiate must be sign extended to at least 16 bits.
-		this->regFile.writeRegPair(inst.operandOne, result);
+		thees->regFile.writeRegPair(inst.operandOne, result);
 	}
 	return true;
 }
+bool Execute::add(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 {
+	Execute* thees = (Execute*)instance;
 	uint16_t opOne;
 	uint16_t opTwo;
 	uint32_t result;
 	//Fetch Operands
-	if(inst.mode == RegReg)
+	if(inst.mode == Reg_Reg)
 	{
-		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
-		opTwo = 0x00FF & this->regFile.readReg(inst.operandTwo);
+		opOne = 0x00FF & thees->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & thees->regFile.readReg(inst.operandTwo);
 	}
-	else if(inst.mode == RegImm8)
+	else if(inst.mode == Reg_Imm8)
 	{
-		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opOne = 0x00FF & thees->regFile.readReg(inst.operandOne);
 		opTwo = 0x00FF & instBytes[1];
 	}
-	else if(inst.mode == RegMem)
+	else if(inst.mode == Reg_MemReg16)
 	{
-		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
-		opTwo = 0x00FF & this->mem->read(this->regFile.readRegPair(inst.operandTwo));
+		opOne = 0x00FF & thees->regFile.readReg(inst.operandOne);
+		opTwo = 0x00FF & thees->mem->read(thees->regFile.readRegPair(inst.operandTwo));
 	}
-	else if(inst.mode == Reg16Simm8)
+	else if(inst.mode == Reg16_Simm8)
 	{
 		//Signed immeadiate must be sign extended to at least 16 bits.
-		opOne = 0x00FF & this->regFile.readReg(inst.operandOne);
+		opOne = 0x00FF & thees->regFile.readReg(inst.operandOne);
 		opTwo = 0x00FF & (instBytes[1]) | (((instBytes[1] & 0x80) == 0x80) ? 0xFF00 : 0x0000);
 		//Set Zero flag to zero. This is due to 16-bit arithmetic being double pumped, other than the INC/DEC which feature 16-bit units with proper flag checks for that width.
-		this->regFile.modifyFlag(Z, false);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::Z, false);
 	}
-	else if(inst.mode == Reg16Reg16)
+	else if(inst.mode == Reg16_Reg16)
 	{
-		opOne = 0xFFFF & this->regFile.readRegPair(inst.operandOne);
-		opTwo = 0xFFFF & this->regFile.readRegPair(inst.operandTwo);
+		opOne = 0xFFFF & thees->regFile.readRegPair(inst.operandOne);
+		opTwo = 0xFFFF & thees->regFile.readRegPair(inst.operandTwo);
 	}
 	else
 	{
@@ -324,30 +335,30 @@ bool dec(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc)
 	//Execute Instruction
 	result = opOne + opTwo;
 	//Set N flag to 0
-	this->regFile.modifyFlag(N, false);
+	thees->regFile.modifyFlag(GbFlag::GbFlag::N, false);
 	//Write Back Results.
-	if(inst.mode == RegReg || inst.mode == RegImm8 || inst.mode == RegMem)
+	if(inst.mode == Reg_Reg || inst.mode == Reg_Imm8 || inst.mode == Reg_Mem)
 	{
 		//Check carry & Half Carry
-		this->regFile.modifyFlag(H,(((opOne & 0x0F) + (opTwo & 0x0F)) & 0x10) == 0x10);
-		this->regFile.modifyFlag(C,(result & 0x100) == 0x100);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::H,(((opOne & 0x0F) + (opTwo & 0x0F)) & 0x10) == 0x10);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::C,(result & 0x100) == 0x100);
 		//set zero flag
-		this->regFile(Z, (uint8_t)(result & 0x00FF) == 0x00)
-		this->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x00FF))
+		thees->regFile.modifyFlag(GbFlag::GbFlag::Z, (uint8_t)(result & 0x00FF) == 0x00);
+		thees->regFile.writeReg(inst.operandOne, (uint8_t)(result & 0x00FF));
 	}
-	else if(inst.mode == Reg16Simm8 || inst.mode == Reg16Reg16)
+	else if(inst.mode == Reg16_Simm8 || inst.mode == Reg16_Reg16)
 	{
 		//Check carry and half carry.
-		this->regFile.modifyFlag(H,(((opOne & 0x0FFF) + (opTwo & 0x0FFF)) & 0x1000) == 0x1000);
-		this->regFile.modifyFlag(C,(result & 0x10000) == 0x10000);
-		this->regFile.writeRegPair(inst.operandOne, (uint16_t)(result & 0x0FFFF);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::H,(((opOne & 0x0FFF) + (opTwo & 0x0FFF)) & 0x1000) == 0x1000);
+		thees->regFile.modifyFlag(GbFlag::GbFlag::C,(result & 0x10000) == 0x10000);
+		thees->regFile.writeRegPair(inst.operandOne, (uint16_t)(result & 0x0FFFF));
 	}
-	if(inst.mode == Reg16Simm8 || inst.mode == RegImm8)
+	if(inst.mode == Reg16_Simm8 || inst.mode == Reg_Imm8)
 	{
 		//Increment Program counter by two
 		pcInc = 2;
 	}
-	else
+	else if()
 	{
 		//Increment Program Counter by One.
 		pcInc = 1;
