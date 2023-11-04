@@ -34,8 +34,39 @@
 #include "RegisterFile.hpp"
 #include <cstdint>
 
-using namespace std;
+namespace GbFlag
+{
+uint8_t getShiftValue(GbFlag flag)
+{
+	switch (flag) {
+		case GbFlag::B0 : return 0;
+		case GbFlag::B1 : return 1;
+		case GbFlag::B2 : return 2;
+		case GbFlag::B3 : return 3;
+		case GbFlag::B4 : return 4;
+		case GbFlag::B5 : return 5;
+		case GbFlag::B6 : return 6;
+		case GbFlag::B7 : return 7;
+		default : return 255;
+	}
+}
 
+uint16_t getRstAddress(GbFlag flag)
+{
+	switch (flag) {
+		case GbFlag::H00 : return 0x0000;
+		case GbFlag::H08 : return 0x0008;
+		case GbFlag::H10 : return 0x0010;
+		case GbFlag::H18 : return 0x0018;
+		case GbFlag::H20 : return 0x0020;
+		case GbFlag::H28 : return 0x0028;
+		case GbFlag::H30 : return 0x0030;
+		case GbFlag::H38 : return 0x0038;
+		default : return 0xFFFF;
+	}
+}
+
+}
  RegisterFile::RegisterFile()
 {
 
@@ -176,7 +207,7 @@ void RegisterFile::decRegPair(GbRegister::GbRegister regPair)
 	this->writeRegPair(regPair, reg);
 }
 
-void RegisterFile::incPc(uint8_t incVal)
+void RegisterFile::incPc(uint16_t incVal)
 {
 	this->pc.increment(incVal);
 }

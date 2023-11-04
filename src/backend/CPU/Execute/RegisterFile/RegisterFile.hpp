@@ -34,6 +34,7 @@
 #include "Register/Register.hpp"
 #include "ProgramCounter/ProgramCounter.hpp"
 #include "StackPointer/StackPointer.hpp"
+#include "stdint.h"
 #include <cstdint>
 
 #define NUM_REG 8
@@ -51,6 +52,8 @@ enum GbFlag
 {
 	NONE, Z = 7, N = 6, H = 5, C = 4, T, TI, NZ, NC, PoI, PoD, H00, H08, H10, H18, H20, H28, H30, H38, B0, B1, B2, B3, B4, B5, B6, B7
 };
+uint8_t getShiftValue(GbFlag flag);
+uint16_t getRstAddress(GbFlag flag);
 }
 
 class RegisterFile
@@ -73,7 +76,7 @@ public:
 	uint16_t readRegPair(GbRegister::GbRegister regPair);
 	void writeRegPair(GbRegister::GbRegister regPair, uint16_t newValue);
 
-	void incPc(uint8_t incVal);
+	void incPc(uint16_t incVal);
 	void incSp();
 	void decSp();
 

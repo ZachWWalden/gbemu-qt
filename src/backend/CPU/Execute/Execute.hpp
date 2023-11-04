@@ -32,7 +32,6 @@
 #pragma once
 
 #include "RegisterFile/RegisterFile.hpp"
-#include "../ProgramCounter/ProgramCounter.hpp"
 #include "../MMU/MMU.hpp"
 #include <cstdint>
 
@@ -45,12 +44,12 @@ enum AddressingMode
 
 enum CpuOperation
 {
-	LD, ADD, ADC, SUB, SBC, CP, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA, SRL, SWAP, BIT, SET, RES, JR, JP, RET, PUSH, POP, DI, EI, CPL, CCF, DAA, SCF, HALT, NOP, STOP, ILLEGAL, CALL, RST, PREFIX
+	LD, ADD, ADC, SUB, SBC, CP, OR, XOR, AND, INC, DEC, RLA, RLCA, RRA, RRCA, RLC, RRC, RL, RR, SLA, SRA, SRL, SWAP, BIT, SET, RES, JR, JP, RET, RETI, PUSH, POP, DI, EI, CPL, CCF, DAA, SCF, HALT, NOP, STOP, ILLEGAL, CALL, RST, PREFIX
 };
 
 struct GbInstruction
 {
-	GbInstruction(AddressingMode newMode, CpuOperation newOp, GbRegister::GbRegister opOne, GbRegister::GbRegister opTwo, uint8_t newLength, uint8_t newCycles, uint8_t newCyclesTaken, bool (*func)(void*, GbInstruction, uint8_t*, uint8_t&))
+	GbInstruction(AddressingMode newMode, CpuOperation newOp, GbRegister::GbRegister opOne, GbRegister::GbRegister opTwo, uint8_t newLength, uint8_t newCycles, uint8_t newCyclesTaken, bool (*func)(void*, GbInstruction, uint8_t*))
 	{
 		mode = newMode;
 		op = newOp;
@@ -62,7 +61,7 @@ struct GbInstruction
 		execFunction = func;
 		condition = GbFlag::GbFlag::NONE;
 	}
-	GbInstruction(AddressingMode newMode, CpuOperation newOp, GbRegister::GbRegister opOne, GbRegister::GbRegister opTwo, uint8_t newLength, uint8_t newCycles, uint8_t newCyclesTaken, bool (*func)(void*, GbInstruction, uint8_t*, uint8_t&), GbFlag::GbFlag newCondition)
+	GbInstruction(AddressingMode newMode, CpuOperation newOp, GbRegister::GbRegister opOne, GbRegister::GbRegister opTwo, uint8_t newLength, uint8_t newCycles, uint8_t newCyclesTaken, bool (*func)(void*, GbInstruction, uint8_t*), GbFlag::GbFlag newCondition)
 	{
 		mode = newMode;
 		op = newOp;
@@ -79,7 +78,7 @@ struct GbInstruction
 	GbRegister::GbRegister operandOne,operandTwo;
 	GbFlag::GbFlag condition;
 	uint8_t length, cycles, cyclesTaken;
-	bool (*execFunction)(void*, GbInstruction, uint8_t*, uint8_t&);
+	bool (*execFunction)(void*, GbInstruction, uint8_t*);
 };
 
 class Execute
@@ -90,7 +89,7 @@ public:
 private:
 	GbInstruction instDec[NUM_INSTRUCTIONS] = {
 		//$0x
-GbInstruction(AddressingMode::NONE_NONE, CpuOperation::NOP, GbRegister::GbRegister::A,GbRegister::GbRegister::A, 1, 4, 4, Execute::nop),								//NOP: 1B, 4C, ----, TODO
+GbInstruction(AddressingMode::NONE_NONE, CpuOperation::NOP, GbRegister::GbRegister::A,GbRegister::GbRegister::A, 1, 4, 4, Execute::nop),								//NOP: 1B, 4C, ----
 GbInstruction(AddressingMode::Reg16_Imm16, CpuOperation::LD, GbRegister::GbRegister::BC, GbRegister::GbRegister::NONE, 3, 12, 12, Execute::load),						//LD BC ,d16: 3B, 12C, ----
 GbInstruction(AddressingMode::MemReg16_Reg, CpuOperation::LD, GbRegister::GbRegister::BC, GbRegister::GbRegister::A, 1, 8, 8, Execute::load),							//LD (BC) ,A: 1B, 8C, ----
 GbInstruction(AddressingMode::Reg16_None, CpuOperation::INC, GbRegister::GbRegister::BC, GbRegister::GbRegister::NONE, 1, 8, 8, Execute::inc),						//INC BC: 1B, 8C, ----
@@ -233,129 +232,129 @@ GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::LD, GbRegister::GbRegi
 GbInstruction(AddressingMode::Reg_Reg, CpuOperation::LD, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::load),								//LD A, A: 1B 4C, Z0HC
 
 		//$8x
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::add),								//ADD A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::add),								//ADD A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::add),								//ADD A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::add),								//ADD A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::add),								//ADD A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::add),								//ADD A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::add),							//ADD A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::add),								//ADD A, A: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::adc),								//ADC A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::adc),								//ADC A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::adc),								//ADC A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::adc),								//ADC A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::adc),								//ADC A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::adc),								//ADC A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::adc),							//ADC A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::adc),								//ADC A, A: 1B 4C, Z0HC, TODO
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::add),								//ADD A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::add),								//ADD A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::add),								//ADD A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::add),								//ADD A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::add),								//ADD A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::add),								//ADD A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::add),							//ADD A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::add),								//ADD A, A: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::adc),								//ADC A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::adc),								//ADC A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::adc),								//ADC A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::adc),								//ADC A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::adc),								//ADC A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::adc),								//ADC A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::adc),							//ADC A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::adc),								//ADC A, A: 1B 4C, Z0HC
 		//$9x
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::sub),								//SUB A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::sub),								//SUB A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::sub),								//SUB A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::sub),								//SUB A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::sub),								//SUB A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::sub),								//SUB A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::sub),							//SUB A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::sub),								//SUB A, A: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::sbc),								//SBC A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::sbc),								//SBC A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::sbc),								//SBC A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::sbc),								//SBC A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::sbc),								//SBC A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::sbc),								//SBC A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::sbc),							//SBC A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::sbc),								//SBC A, A: 1B 4C, Z0HC, TODO
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::sub),								//SUB A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::sub),								//SUB A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::sub),								//SUB A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::sub),								//SUB A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::sub),								//SUB A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::sub),								//SUB A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::sub),							//SUB A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::sub),								//SUB A, A: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::sbc),								//SBC A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::sbc),								//SBC A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::sbc),								//SBC A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::sbc),								//SBC A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::sbc),								//SBC A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::sbc),								//SBC A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::sbc),							//SBC A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::sbc),								//SBC A, A: 1B 4C, Z0HC
 
 		//$Ax
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::bwAnd),								//AND A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::bwAnd),								//AND A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::bwAnd),								//AND A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::bwAnd),								//AND A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::bwAnd),								//AND A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::bwAnd),								//AND A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::bwAnd),						//AND A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::bwAnd),								//AND A, A: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::bwXor),								//XOR A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::bwXor),								//XOR A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::bwXor),								//XOR A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::bwXor),								//XOR A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::bwXor),								//XOR A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::bwXor),								//XOR A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::bwXor),						//XOR A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::bwXor),								//XOR A, A: 1B 4C, Z0HC, TODO
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::bwAnd),								//AND A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::bwAnd),								//AND A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::bwAnd),								//AND A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::bwAnd),								//AND A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::bwAnd),								//AND A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::bwAnd),								//AND A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::bwAnd),						//AND A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::bwAnd),								//AND A, A: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::bwXor),								//XOR A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::bwXor),								//XOR A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::bwXor),								//XOR A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::bwXor),								//XOR A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::bwXor),								//XOR A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::bwXor),								//XOR A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::bwXor),						//XOR A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::bwXor),								//XOR A, A: 1B 4C, Z0HC
 
 		//$Bx
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::bwOr),								//OR A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::bwOr),								//OR A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::bwOr),								//OR A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::bwOr),								//OR A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::bwOr),								//OR A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::bwOr),								//OR A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::bwOr),							//OR A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::bwOr),								//OR A, A: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::sub),								//CP A, B: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::sub),								//CP A, C: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::sub),								//CP A, D: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::sub),								//CP A, E: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::sub),								//CP A, H: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::sub),								//CP A, L: 1B 4C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::sub),							//CP A, (HL): 1B 8C, ----, TODO
-GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::sub),								//CP A, A: 1B 4C, Z0HC, TODO
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::bwOr),								//OR A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::bwOr),								//OR A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::bwOr),								//OR A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::bwOr),								//OR A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::bwOr),								//OR A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::bwOr),								//OR A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::bwOr),							//OR A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::bwOr),								//OR A, A: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::B, 1, 4, 4, Execute::sub),								//CP A, B: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::C, 1, 4, 4, Execute::sub),								//CP A, C: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::D, 1, 4, 4, Execute::sub),								//CP A, D: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::E, 1, 4, 4, Execute::sub),								//CP A, E: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::H, 1, 4, 4, Execute::sub),								//CP A, H: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::L, 1, 4, 4, Execute::sub),								//CP A, L: 1B 4C, Z0HC
+GbInstruction(AddressingMode::Reg_MemReg16, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::HL, 1, 8, 8, Execute::sub),							//CP A, (HL): 1B 8C, ----
+GbInstruction(AddressingMode::Reg_Reg, CpuOperation::CP, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 1, 4, 4, Execute::sub),								//CP A, A: 1B 4C, Z0HC
 																																		//
 		//$Cx
 GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::RET, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 8, 20, Execute::ret, GbFlag::GbFlag::NZ),		//RET NZ: 1B 20/8C, ----, TODO
-GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::POP, GbRegister::GbRegister::BC, GbRegister::GbRegister::SP, 1, 12, 12, Execute::load, GbFlag::GbFlag::PoI),	//POP BC: 1B 12C, ----, TODO
+GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::POP, GbRegister::GbRegister::BC, GbRegister::GbRegister::SP, 1, 12, 12, Execute::load, GbFlag::GbFlag::PoI),	//POP BC: 1B 12C, ----
 GbInstruction(AddressingMode::Reg16_Imm16, CpuOperation::JP, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 3, 12, 16, Execute::jp, GbFlag::GbFlag::NZ),			//JP NZ, a16: 3B 16/12C, ----
 GbInstruction(AddressingMode::Reg16_Imm16, CpuOperation::JP, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 3, 16, 16, Execute::jp, GbFlag::GbFlag::T),			//JP a16: 3B 16C, ----, TODO
-GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::NONE, 3, 16, 16, Execute::call, GbFlag::GbFlag::NZ),	//CALL NZ, a16: 3B 24/12C, ----, TODO
+GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::PC, 3, 16, 16, Execute::call, GbFlag::GbFlag::NZ),	//CALL NZ, a16: 3B 24/12C, ----, TODO
 GbInstruction(AddressingMode::MemReg16_Reg16, CpuOperation::PUSH, GbRegister::GbRegister::SP, GbRegister::GbRegister::BC, 1, 16, 16, Execute::load, GbFlag::GbFlag::PoD),	//PUSH BC: 1B 16C, ----
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::add),								//ADD A, d8: 2B 8C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H00),		//RST 00H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::ADD, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::add),								//ADD A, d8: 2B 8C, Z0HC
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H00),		//RST 00H: 1B 16C, ----, TODO
 GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::RET, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 8, 20, Execute::ret, GbFlag::GbFlag::Z),		//RET Z: 1B 20/8C, ----, TODO
 GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::RET, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::ret, GbFlag::GbFlag::T),		//RET : 1B 16C, ----, TODO
 GbInstruction(AddressingMode::Reg16_Imm16, CpuOperation::JP, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 3, 12, 16, Execute::jp, GbFlag::GbFlag::Z),			//JP Z, a16: 3B 16/12C, ----, TODO
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::PREFIX, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 2, 4, 4, Execute::decodePrefixInstruction),	//PREFIX CB: 1B 4C, ----, TODO
-GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::NONE, 3, 12, 24, Execute::call, GbFlag::GbFlag::Z),	//CALL Z, a16: 3B 24/12C, ----, TODO
-GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::NONE, 3, 24, 24, Execute::call, GbFlag::GbFlag::T),	//CALL a16: 3B 24C, ----, TODO
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::adc),								//ADC A, d8: 2B 8C, Z0HC, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H08),		//RST 08H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::PC, 3, 12, 24, Execute::call, GbFlag::GbFlag::Z),	//CALL Z, a16: 3B 24/12C, ----, TODO
+GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::PC, 3, 24, 24, Execute::call, GbFlag::GbFlag::T),	//CALL a16: 3B 24C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::ADC, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::adc),								//ADC A, d8: 2B 8C, Z0HC
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H08),		//RST 08H: 1B 16C, ----, TODO
 
 		//$Dx
 GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::RET, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 8, 20, Execute::ret, GbFlag::GbFlag::NC),		//RET NC: 1B 20/8C, ----, TODO
 GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::POP, GbRegister::GbRegister::DE, GbRegister::GbRegister::SP, 1, 12, 12, Execute::load, GbFlag::GbFlag::PoI),	//POP DE: 1B 12C, ----
 GbInstruction(AddressingMode::Reg16_Imm16, CpuOperation::JP, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 3, 12, 16, Execute::jp, GbFlag::GbFlag::NZ),			//JP NZ, a16: 3B 16/12C, ----, TODO
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xD3)
-GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::NONE, 3, 12, 24, Execute::call, GbFlag::GbFlag::NC),	//CALL NC, a16: 3B 24/12C, ----, TODO
+GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::PC, 3, 12, 24, Execute::call, GbFlag::GbFlag::NC),	//CALL NC, a16: 3B 24/12C, ----, TODO
 GbInstruction(AddressingMode::MemReg16_Reg16, CpuOperation::PUSH, GbRegister::GbRegister::SP, GbRegister::GbRegister::DE, 1, 16, 16, Execute::load, GbFlag::GbFlag::PoD),	//PUSH DE: 1B 16C, ----
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::sub),								//SUB A, d8: 2B 8C, Z1HC, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H10),		//RST 10H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::SUB, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::sub),								//SUB A, d8: 2B 8C, Z1HC
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H10),		//RST 10H: 1B 16C, ----, TODO
 GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::RET, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 8, 20, Execute::ret, GbFlag::GbFlag::C),		//RET C: 1B 20/8C, ----, TODO
-GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::RET, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::ret, GbFlag::GbFlag::TI),		//RETI : 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::RETI, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::ret, GbFlag::GbFlag::T),		//RETI : 1B 16C, ----, TODO
 GbInstruction(AddressingMode::Reg16_Imm16, CpuOperation::JP, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 3, 12, 16, Execute::jp, GbFlag::GbFlag::C),			//JP C, a16: 3B 16/12C, ----, TODO
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xDB)
-GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::NONE, 3, 12, 24, Execute::call, GbFlag::GbFlag::C),	//CALL C, a16: 3B 24/12C, ----, TODO
+GbInstruction(AddressingMode::MemImm16_None, CpuOperation::CALL, GbRegister::GbRegister::SP, GbRegister::GbRegister::PC, 3, 12, 24, Execute::call, GbFlag::GbFlag::C),	//CALL C, a16: 3B 24/12C, ----, TODO
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xDD)
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::sbc),								//SBC A, d8: 2B 8C, Z1HC, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H18),		//RST 18H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::SBC, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::sbc),								//SBC A, d8: 2B 8C, Z1HC
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H18),		//RST 18H: 1B 16C, ----, TODO
 
 		//$Ex
 GbInstruction(AddressingMode::MemImm8_Reg, CpuOperation::LD, GbRegister::GbRegister::NONE, GbRegister::GbRegister::A, 2, 12, 12, Execute::load),							//LDH (a8), A: 2B 12C, ----
 GbInstruction(AddressingMode::Reg16_MemReg16, CpuOperation::POP, GbRegister::GbRegister::HL, GbRegister::GbRegister::SP, 1, 12, 12, Execute::load, GbFlag::GbFlag::PoI),	//POP HL: 1B 12C, ----
-GbInstruction(AddressingMode::MemReg_Reg, CpuOperation::LD, GbRegister::GbRegister::C, GbRegister::GbRegister::A, 2, 4, 4, Execute::load),								//LDH (C), A, 2B 4C, ----, TODO WARNING POTENTIAL BUG (LENGTH)
+GbInstruction(AddressingMode::MemReg_Reg, CpuOperation::LD, GbRegister::GbRegister::C, GbRegister::GbRegister::A, 2, 4, 4, Execute::load),								//LDH (C), A, 2B 4C, ----, WARNING POTENTIAL BUG (LENGTH)
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xE3)
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xE4)
 GbInstruction(AddressingMode::MemReg16_Reg16, CpuOperation::PUSH, GbRegister::GbRegister::SP, GbRegister::GbRegister::HL, 1, 16, 16, Execute::load, GbFlag::GbFlag::PoD),	//PUSH HL: 1B 16C, ----
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwAnd),							//AND A, d8: 2B 8C, Z010, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H20),		//RST 20H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::AND, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwAnd),							//AND A, d8: 2B 8C, Z010
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H20),		//RST 20H: 1B 16C, ----, TODO
 GbInstruction(AddressingMode::Reg16_Simm8, CpuOperation::ADD, GbRegister::GbRegister::SP, GbRegister::GbRegister::NONE, 2, 16, 16, Execute::add),							//ADD SP, r8, 2B 16C, 00HC
-GbInstruction(AddressingMode::Reg16_Reg16, CpuOperation::JP, GbRegister::GbRegister::PC, GbRegister::GbRegister::HL, 1, 4, 4, Execute::jp, GbFlag::GbFlag::T),			//JP (HL): 1B 4C, ----, TODO WARNING
+GbInstruction(AddressingMode::Reg16_Reg16, CpuOperation::JP, GbRegister::GbRegister::PC, GbRegister::GbRegister::HL, 1, 4, 4, Execute::load),			//JP (HL): 1B 4C, ----, TODO WARNING
 GbInstruction(AddressingMode::MemImm16_Reg, CpuOperation::LD, GbRegister::GbRegister::NONE, GbRegister::GbRegister::A, 3, 16, 16, Execute::load),							//LD (a16), A: 3B 16C, ----
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xEB)
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xEC)
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xED)
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwXor),							//XOR A, d8: 2B 8C, Z000, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H28),		//RST 28H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwXor),							//XOR A, d8: 2B 8C, Z000
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H28),		//RST 28H: 1B 16C, ----, TODO
 
 		//$Fx
 GbInstruction(AddressingMode::Reg_MemImm8, CpuOperation::LD, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 12, 12, Execute::load),							//LDH A, (a8): 2B 12C, ----
@@ -364,16 +363,16 @@ GbInstruction(AddressingMode::Reg_MemReg, CpuOperation::LD, GbRegister::GbRegist
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::DI, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::weird),							//DI: 1B 4C, ----, TODO
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xF4)
 GbInstruction(AddressingMode::MemReg16_Reg16, CpuOperation::PUSH, GbRegister::GbRegister::SP, GbRegister::GbRegister::AF, 1, 16, 16, Execute::load, GbFlag::GbFlag::PoD),	//PUSH AF: 1B 16C, ----
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwOr),								//OR A, d8: 2B 8C, Z000, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H30),		//RST 30H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::OR, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwOr),								//OR A, d8: 2B 8C, Z000
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H30),		//RST 30H: 1B 16C, ----, TODO
 GbInstruction(AddressingMode::Reg16_Reg16Sim8, CpuOperation::LD, GbRegister::GbRegister::HL, GbRegister::GbRegister::SP, 2, 8, 8, Execute::load),						//LD HL, SP+r8: 2B 8C, 00HC
 GbInstruction(AddressingMode::Reg16_Reg16, CpuOperation::LD, GbRegister::GbRegister::SP, GbRegister::GbRegister::HL, 1, 8, 8, Execute::load),							//LD SP, HL: 1B 8C, ----
 GbInstruction(AddressingMode::Reg_MemImm16, CpuOperation::LD, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 3, 16, 16, Execute::load),							//LD A, (a16): 3B 16C, ----
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::EI, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::weird),							//EI: 1B 4C, ----, TODO
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xFC)
 GbInstruction(AddressingMode::NONE_NONE, CpuOperation::ILLEGAL, GbRegister::GbRegister::NONE, GbRegister::GbRegister::NONE, 1, 4, 4, Execute::illegal),					//ILLEGAL OP CODE (0xFD)
-GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwXor),							//XOR A, d8: 2B 8C, Z000, TODO
-GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::NONE, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H38),		//RST 38H: 1B 16C, ----, TODO
+GbInstruction(AddressingMode::Reg_Imm8, CpuOperation::XOR, GbRegister::GbRegister::A, GbRegister::GbRegister::NONE, 2, 8, 8, Execute::bwXor),							//XOR A, d8: 2B 8C, Z000
+GbInstruction(AddressingMode::Reg16_None, CpuOperation::RST, GbRegister::GbRegister::PC, GbRegister::GbRegister::SP, 1, 16, 16, Execute::rst, GbFlag::GbFlag::H38),		//RST 38H: 1B 16C, ----, TODO
 
 
 
@@ -453,220 +452,220 @@ GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SRL, GbRegister::GbRe
 GbInstruction(AddressingMode::Reg_None, CpuOperation::SRL, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::shift),								//SRL A: 2B 8C, Z00C. TODO
 
 		//$4x
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B0),				//BIT 0, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, A: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B1),				//BIT 1, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, A: 2B 8C, Z01-. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B0),				//BIT 0, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B0),						//BIT 0, A: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B1),				//BIT 1, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B1),						//BIT 1, A: 2B 8C, Z01-
 
 		//$5x
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B2),				//BIT 2, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, A: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B3),				//BIT 3, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, A: 2B 8C, Z01-. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B2),				//BIT 2, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B2),						//BIT 2, A: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B3),				//BIT 3, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B3),						//BIT 3, A: 2B 8C, Z01-
 
 		//$6x
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B4),				//BIT 4, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, A: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, 2, 16, 16, GbRegister::GbRegister::HL, Execute::bit, GbFlag::GbFlag::B5),				//BIT 5, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, A: 2B 8C, Z01-. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B4),				//BIT 4, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B4),						//BIT 4, A: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B5),				//BIT 5, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B5),						//BIT 5, A: 2B 8C, Z01-
 
 		//$7x
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B6),				//BIT 6, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, A: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, B: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, C: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, D: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, E: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, H: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, L: 2B 8C, Z01-. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B7),				//BIT 7, (HL): 2B 16C, Z01-, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, A: 2B 8C, Z01-. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B6),				//BIT 6, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B6),						//BIT 6, A: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, B: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, C: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, D: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, E: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, H: 2B 8C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, L: 2B 8C, Z01-
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::BIT, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::bit, GbFlag::GbFlag::B7),				//BIT 7, (HL): 2B 16C, Z01-
+GbInstruction(AddressingMode::Reg_None, CpuOperation::BIT, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::bit, GbFlag::GbFlag::B7),						//BIT 7, A: 2B 8C, Z01-
 
 		//$8x
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B,  2, 8, 8,Execute::res, GbFlag::GbFlag::B0),						//RES 0, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B0),				//RES 0, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B1),				//RES 1, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B,  2, 8, 8,Execute::res, GbFlag::GbFlag::B0),						//RES 0, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B0),				//RES 0, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B0),						//RES 0, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B1),				//RES 1, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B1),						//RES 1, A: 2B 8C, ----
 
 		//$9x
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B2),				//RES 2, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B3),				//RES 3, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B2),				//RES 2, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B2),						//RES 2, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B3),				//RES 3, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B3),						//RES 3, A: 2B 8C, ----
 
 		//$Ax
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B4),				//RES 4, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B5),				//RES 5, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B4),				//RES 4, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 4, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B5),				//RES 5, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B5),						//RES 5, A: 2B 8C, ----
 
 		//$Bx
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B4),				//RES 6, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B7),				//RES 7, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B4),				//RES 6, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B4),						//RES 6, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::RES, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::res, GbFlag::GbFlag::B7),				//RES 7, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::RES, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::res, GbFlag::GbFlag::B7),						//RES 7, A: 2B 8C, ----
 
 		//$Cx
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B0),				//SET 0, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B1),				//SET 1, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B0),				//SET 0, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B0),						//SET 0, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B1),				//SET 1, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B1),						//SET 1, A: 2B 8C, ----
 
 		//$Dx
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B2),				//SET 2, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B3),				//SET 3, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B2),				//SET 2, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B2),						//SET 2, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B3),				//SET 3, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B3),						//SET 3, A: 2B 8C, ----
 
 		//$Ex
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B4),				//SET 4, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B5),				//SET 5, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B4),				//SET 4, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B4),						//SET 4, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B5),				//SET 5, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B5),						//SET 5, A: 2B 8C, ----
 
 		//$Fx
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B6),				//SET 6, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, A: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, B: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, C: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, D: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, E: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, H: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, L: 2B 8C, ----. TODO
-GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B7),				//SET 7, (HL): 2B 16C, ----, TODD
-GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, A: 2B 8C, ----. TODO
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B6),				//SET 6, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B6),						//SET 6, A: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::B, GbRegister::GbRegister::B, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, B: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::C, GbRegister::GbRegister::C, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, C: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::D, GbRegister::GbRegister::D, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, D: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::E, GbRegister::GbRegister::E, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, E: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::H, GbRegister::GbRegister::H, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, H: 2B 8C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::L, GbRegister::GbRegister::L, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, L: 2B 8C, ----
+GbInstruction(AddressingMode::MemReg16_None, CpuOperation::SET, GbRegister::GbRegister::HL, GbRegister::GbRegister::HL, 2, 16, 16, Execute::set, GbFlag::GbFlag::B7),				//SET 7, (HL): 2B 16C, ----
+GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegister::A, GbRegister::GbRegister::A, 2, 8, 8, Execute::set, GbFlag::GbFlag::B7),						//SET 7, A: 2B 8C, ----
 
 };
 
@@ -680,34 +679,33 @@ public:
 	uint8_t executeInstruction(uint8_t* instructionBytes, uint8_t &pcInc);
 private:
 	GbInstruction decodeInstruction(uint8_t* instructionBytes);
-	static bool decodePrefixInstruction(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	static bool decodePrefixInstruction(void* instance, GbInstruction inst, uint8_t* instBytes);
 	//Functions to execute each Instruction.
 
-	static bool load(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool inc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool dec(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool add(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool adc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool sub(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool sbc(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool bwAnd(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool bwXor(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool bwOr(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool bit(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool res(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool set(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	static bool load(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool inc(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool dec(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool add(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool adc(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool sub(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool sbc(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool bwAnd(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool bwXor(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool bwOr(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool bit(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool res(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool set(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool nop(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool swap(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool jp(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool jr(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool call(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool ret(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool rst(void* instance, GbInstruction inst, uint8_t* instBytes);
 
-
-	static bool nop(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool rotate(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool stop(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool jr(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool weird(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool ret(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool jp(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool rst(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool call(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool illegal(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool shift(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
-	static bool swap(void* instance, GbInstruction inst, uint8_t* instBytes, uint8_t &pcInc);
+	static bool rotate(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool stop(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool weird(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool illegal(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool shift(void* instance, GbInstruction inst, uint8_t* instBytes);
 };

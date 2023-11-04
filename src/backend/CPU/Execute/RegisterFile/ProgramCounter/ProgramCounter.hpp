@@ -45,7 +45,7 @@ public:
 
 	uint16_t read();
 	void write(uint16_t newValue);
-	void increment(uint8_t incValue);
+	void increment(uint16_t incValue);
 
 private:
 };

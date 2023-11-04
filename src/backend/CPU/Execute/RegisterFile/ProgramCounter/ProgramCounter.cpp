@@ -51,7 +51,7 @@ void ProgramCounter::write(uint16_t newValue)
 {
 	this->value = newValue;
 }
-void ProgramCounter::increment(uint8_t incValue)
+void ProgramCounter::increment(uint16_t incValue)
 {
 	this->value += incValue;
 }
