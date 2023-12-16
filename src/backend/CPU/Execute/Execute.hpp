@@ -33,7 +33,10 @@
 
 #include "RegisterFile/RegisterFile.hpp"
 #include "../MMU/MMU.hpp"
+#include "../../CycleListener/CycleListener.hpp"
+
 #include <cstdint>
+#include <vector>
 
 #define NUM_INSTRUCTIONS 256
 
@@ -672,12 +675,17 @@ GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegiste
 	//Objects and Object Handles.
 	RegisterFile regFile;
 	MMU* mem;
+	//vector of callbacks for emitted cycles
+	std::vector<CycleListener*> cycleListeners;
 	//Methods
 public:
 	Execute();
 	~Execute();
 	uint8_t executeInstruction(uint8_t* instructionBytes, uint8_t &pcInc);
+	void registerCycleWatchCalback(CycleListener* listener);
 private:
+	void emitCycles(uint8_t numCycles);
+
 	GbInstruction decodeInstruction(uint8_t* instructionBytes);
 	static bool decodePrefixInstruction(void* instance, GbInstruction inst, uint8_t* instBytes);
 	//Functions to execute each Instruction.

@@ -39,6 +39,18 @@
 TODO 1. Fix 16 bit arithmetic half carries.
 */
 
+void Execute::registerCycleWatchCalback(CycleListener* listener)
+{
+	this->cycleListeners.push_back(listener);
+}
+void Execute::emitCycles(uint8_t numCycles)
+{
+	for (CycleListener* listener : this->cycleListeners)
+	{
+		listener->cycleListener(numCycles);
+	}
+}
+
 GbInstruction Execute::decodeInstruction(uint8_t* instructionBytes)
 {
 	return this->instDec[instructionBytes[0]];
