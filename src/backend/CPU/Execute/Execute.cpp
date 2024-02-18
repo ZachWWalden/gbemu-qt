@@ -69,6 +69,7 @@ bool Execute::decodePrefixInstruction(void* instance, GbInstruction inst, uint8_
 bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*) instance;
+	thees->emitCycles(inst.cycles);
 	uint16_t opOne, address, opTwo;
 	//Reg Source:MemReg_Reg,  Reg_Reg,  MemImm8_Reg,  MemReg16_Reg
 	if(inst.mode == MemReg_Reg || inst.mode == Reg_Reg || inst.mode == MemImm8_Reg || inst.mode == MemReg16_Reg)
@@ -196,6 +197,7 @@ bool Execute::load(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::inc(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint16_t opOne;
 	uint16_t result;
 	//Fetch Operands
@@ -246,6 +248,7 @@ bool Execute::inc(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::dec(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint16_t opOne;
 	uint16_t result;
 	//Fetch Operands
@@ -296,6 +299,7 @@ bool Execute::dec(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::add(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint16_t opOne;
 	uint16_t opTwo;
 	uint32_t result;
@@ -362,6 +366,7 @@ bool Execute::add(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::adc(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t opOne;
 	uint8_t opTwo;
 	uint16_t result;
@@ -402,6 +407,7 @@ bool Execute::adc(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::sub(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t opOne;
 	uint8_t opTwo;
 	uint16_t result;
@@ -441,6 +447,7 @@ bool Execute::sub(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::sbc(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t opOne;
 	uint8_t opTwo;
 	uint16_t result;
@@ -479,6 +486,7 @@ bool Execute::sbc(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::bwAnd(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t opOne;
 	uint8_t opTwo;
 	uint8_t result;
@@ -515,6 +523,7 @@ bool Execute::bwAnd(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::bwXor(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t opOne;
 	uint8_t opTwo;
 	uint8_t result;
@@ -551,6 +560,7 @@ bool Execute::bwXor(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::bwOr(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t opOne;
 	uint8_t opTwo;
 	uint8_t result;
@@ -587,6 +597,7 @@ bool Execute::bwOr(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::bit(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
 	//There are two addressing mode for thees Instruction. RegNone, and MemNone.
@@ -622,6 +633,7 @@ bool Execute::bit(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::res(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	//Operand One is the Bit operand. operand two is the register operand.
 	uint8_t operand;
 	uint16_t address;
@@ -665,6 +677,7 @@ bool Execute::res(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::set(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t operand;
 	uint16_t address;
 	//There are two addressing mode for thees Instruction. RegNone, and MemNone.
@@ -706,11 +719,14 @@ bool Execute::set(void* instance, GbInstruction inst, uint8_t* instBytes)
 }
 bool Execute::nop(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
+	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	return true; //lol
 }
 bool Execute::swap(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint8_t operand;
 	uint16_t address;
 	//There are two addressing mode for thees Instruction. RegNone, and MemNone.
@@ -785,10 +801,12 @@ bool Execute::jp(void* instance, GbInstruction inst, uint8_t* instBytes)
 	if(jump)
 	{
 		thees->regFile.writeRegPair(GbRegister::GbRegister::PC, address);
-		//TODO emit cycles
+		// emit cycles
+		thees->emitCycles(inst.cyclesTaken);
 	}
 	else {
-		//TODO emit not taken cycles.
+		// emit not taken cycles.
+		thees->emitCycles(inst.cycles);
 	}
 	return true;
 }
@@ -824,10 +842,12 @@ bool Execute::jr(void* instance, GbInstruction inst, uint8_t* instBytes)
 	if(jump)
 	{
 		thees->regFile.incPc(pcOffset);
-		//TODO emit cycles
+		//emit cycles
+		thees->emitCycles(inst.cyclesTaken);
 	}
 	else {
-		//TODO emit not taken cycles.
+		//emit not taken cycles.
+		thees->emitCycles(inst.cycles);
 	}
 	return true;
 }
@@ -868,10 +888,12 @@ bool Execute::call(void* instance, GbInstruction inst, uint8_t* instBytes)
 		thees->mem->write(sp - 1, pc & 0x00FF);
 		thees->regFile.decSp();
 		thees->regFile.writeRegPair(inst.operandTwo, address);
-		//TODO emit cycles
+		// emit cycles
+		thees->emitCycles(inst.cyclesTaken);
 	}
 	else {
 		//TODO emit not taken cycles.
+		thees->emitCycles(inst.cycles);
 	}
 	return true;
 }
@@ -910,10 +932,12 @@ bool Execute::ret(void* instance, GbInstruction inst, uint8_t* instBytes)
 		uint16_t pc = ((thees->mem->read(sp + 1) << 8) & 0xFF00) | thees->mem->read(sp);
 		thees->regFile.incSp();
 		thees->regFile.writeRegPair(inst.operandTwo, pc);
-		//TODO emit cycles
+		//emit cycles
+		thees->emitCycles(inst.cyclesTaken);
 	}
 	else {
-		//TODO emit not taken cycles.
+		//emit not taken cycles.
+		thees->emitCycles(inst.cycles);
 	}
 	if (inst.op == RETI)
 	{
@@ -924,6 +948,7 @@ bool Execute::ret(void* instance, GbInstruction inst, uint8_t* instBytes)
 bool Execute::rst(void* instance, GbInstruction inst, uint8_t* instBytes)
 {
 	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
 	uint16_t address = GbFlag::getRstAddress(inst.condition);
 	uint16_t pc = thees->regFile.readRegPair(inst.operandOne) + 1, sp = thees->regFile.readRegPair(inst.operandTwo) - 1;
 	//push address of next instruciton
