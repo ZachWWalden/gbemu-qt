@@ -2,7 +2,7 @@
  *Class - GameBoy
  *Author - Zach Walden
  *Created - 7/22/22
- *Last Changed - 10/11/23
+ *Last Changed - 7/22/22
  *Description - Top Level GameBoy Module/Class
 ====================================================================================*/
 
@@ -29,34 +29,18 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include <string>
 
 
-//TODO use a callback based system for dumping frames out of the emulator. this will allow full decoupling between backend and frontend allowing for a desktop interface or whatever really.
 class GameBoy
 {
 	//Attributes
 public:
 
 private:
-	//callback pointer
-	void* frameDumpCallback;
 	//Methods
 public:
 	GameBoy();
 	~GameBoy();
 
-	void setCallback(void* frameDumpCallback);
-
-	//emulator goodies. will be useful for debugging as well.
-	void saveState(std::string saveStateNamePath);
-	void loadState(std::string saveStateNamePath);
-
-	//resets the core and restarts with boot process.
-	void loadRom(std::string romNamePath);
-
-	void run();
-
 private:
-	void reboot();
 };
