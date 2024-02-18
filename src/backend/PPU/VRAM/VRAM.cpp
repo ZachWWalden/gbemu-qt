@@ -1,5 +1,5 @@
 /*==================================================================================
- *Class -
+ *Class - VRAM
  *Author - Zach Walden
  *Created -
  *Last Changed -
@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "CHANGE.hpp"
+#include "VRAM.hpp"
 
 
 
@@ -52,7 +52,7 @@
 
 
 /*
-<++> CHANGE::<++>()
+<++> VRAM::<++>()
 {
 
 }

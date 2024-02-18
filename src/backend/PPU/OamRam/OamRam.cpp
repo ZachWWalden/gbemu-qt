@@ -1,5 +1,5 @@
 /*==================================================================================
- *Class -
+ *Class - OamRam
  *Author - Zach Walden
  *Created -
  *Last Changed -
@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "CHANGE.hpp"
+#include "OamRam.hpp"
 
 
 
@@ -52,7 +52,7 @@
 
 
 /*
-<++> CHANGE::<++>()
+<++> OamRam::<++>()
 {
 
 }

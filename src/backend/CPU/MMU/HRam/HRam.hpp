@@ -1,5 +1,5 @@
 /*==================================================================================
- *Class -
+ *Class - HRam
  *Author - Zach Walden
  *Created -
  *Last Changed -
@@ -31,7 +31,7 @@
 
 
 
-class CHANGE
+class HRam
 {
 	//Attributes
 public:
@@ -39,8 +39,8 @@ public:
 private:
 	//Methods
 public:
-	CHANGE();
-	~CHANGE();
+	HRam();
+	~HRam();
 
 private:
 };

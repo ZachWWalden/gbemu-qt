@@ -1,5 +1,5 @@
 /*==================================================================================
- *Class -
+ *Class - OamRam
  *Author - Zach Walden
  *Created -
  *Last Changed -
@@ -31,7 +31,7 @@
 
 
 
-class CHANGE
+class OamRam
 {
 	//Attributes
 public:
@@ -39,8 +39,8 @@ public:
 private:
 	//Methods
 public:
-	CHANGE();
-	~CHANGE();
+	OamRam();
+	~OamRam();
 
 private:
 };

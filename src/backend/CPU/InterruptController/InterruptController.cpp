@@ -1,5 +1,5 @@
 /*==================================================================================
- *Class -
+ *Class - InterruptController
  *Author - Zach Walden
  *Created -
  *Last Changed -
@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "CHANGE.hpp"
+#include "InterruptController.hpp"
 
 
 
@@ -52,7 +52,7 @@
 
 
 /*
-<++> CHANGE::<++>()
+<++> InterruptController::<++>()
 {
 
 }

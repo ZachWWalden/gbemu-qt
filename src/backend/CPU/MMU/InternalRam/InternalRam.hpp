@@ -1,5 +1,5 @@
 /*==================================================================================
- *Class -
+ *Class - InternalRam
  *Author - Zach Walden
  *Created -
  *Last Changed -
@@ -31,7 +31,7 @@
 
 
 
-class CHANGE
+class InternalRam
 {
 	//Attributes
 public:
@@ -39,8 +39,8 @@ public:
 private:
 	//Methods
 public:
-	CHANGE();
-	~CHANGE();
+	InternalRam();
+	~InternalRam();
 
 private:
 };

@@ -1,5 +1,5 @@
 /*==================================================================================
- *Class -
+ *Class - InternalRam
  *Author - Zach Walden
  *Created -
  *Last Changed -
@@ -31,7 +31,7 @@
 
 #pragma once
 
-#include "CHANGE.hpp"
+#include "InternalRam.hpp"
 
 
 
@@ -52,7 +52,7 @@
 
 
 /*
-<++> CHANGE::<++>()
+<++> InternalRam::<++>()
 {
 
 }

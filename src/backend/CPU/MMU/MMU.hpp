@@ -33,14 +33,14 @@
 
 #include "stdint.h"
 
-#include "../../VRAM/VRAM.hpp"
+#include "../../PPU/VRAM/VRAM.hpp"
 #include "../../Cartridge/Cartridge.hpp"
 #include "../../IoRam/IoRam.hpp"
 #include "../../PPU/OamRam/OamRam.hpp"
 #include "../InterruptController/InterruptController.hpp"
 #include "BootRom/BootRom.hpp"
 #include "InternalRam/InternalRam.hpp"
-#include "HRam/HRam.cpp"
+#include "HRam/HRam.hpp"
 
 enum MemUnit
 {
