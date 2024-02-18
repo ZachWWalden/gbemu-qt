@@ -1,8 +1,9 @@
 /*==================================================================================
+ *Class - CycleListener
  *Author - Zach Walden
- *Created - 7/22/22
- *Last Changed - 7/25/22
- *Description - ProgramCounters instructions from the system memory.
+ *Created - 11/4/23
+ *Last Changed - 11/4/23
+ *Description - Class contains a member callback to track cycles emitted by the CP
 ====================================================================================*/
 
 /*
@@ -30,32 +31,45 @@
 
 #pragma once
 
-#include "ProgramCounter.hpp"
+#include "CycleListener.hpp"
 
- ProgramCounter::ProgramCounter()
-{
-
-}
- ProgramCounter::~ProgramCounter()
+CycleListener::CycleListener()
 {
 
 }
 
-uint16_t ProgramCounter::read()
+CycleListener::~CycleListener()
 {
-	return this->value;
+
 }
-void ProgramCounter::write(uint16_t newValue)
+
+bool CycleListener::checkForNewCycles()
 {
-	this->value = newValue;
+	return this->newCycles;
 }
-void ProgramCounter::increment(uint8_t incValue)
+
+uint8_t CycleListener::getNumCycles()
 {
-	this->value += incValue;
+	return this->numCycles;
 }
+
+void CycleListener::cycleListener(uint8_t cycles)
+{
+	this->numCycles = cycles;
+}
+
+
+
+
+
+
+
+
+
+
 
 /*
-<++> ProgramCounter::<++>()
+<++> CycleListener::<++>()
 {
 
 }

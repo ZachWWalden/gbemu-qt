@@ -1,9 +1,9 @@
 /*==================================================================================
- *Class - ProgramCounter
+ *Class - CycleListener
  *Author - Zach Walden
- *Created - 7/22/22
- *Last Changed - 7/25/22
- *Description - ProgramCounters instructions from the system memory.
+ *Created - 11/4/23
+ *Last Changed - 11/4/23
+ *Description - Class contains a member callback to track cycles emitted by the CP
 ====================================================================================*/
 
 /*
@@ -29,23 +29,24 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <cstdint>
 
-
-class ProgramCounter
+class CycleListener
 {
 	//Attributes
 public:
-
 private:
-	uint16_t value;
+	bool newCycles = false;
+	uint8_t  numCycles;
 	//Methods
 public:
-	ProgramCounter();
-	~ProgramCounter();
+	CycleListener();
+	~CycleListener();
 
-	uint16_t read();
-	void write(uint16_t newValue);
-	void increment(uint8_t incValue);
+	bool checkForNewCycles();
+	uint8_t getNumCycles();
+
+	void cycleListener(uint8_t);
 
 private:
 };

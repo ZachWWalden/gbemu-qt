@@ -33,10 +33,9 @@
 
 #include "stdint.h"
 
-#include "../../VRAM/VRAM.hpp"
 #include "../../Cartridge/Cartridge.hpp"
 #include "../../IoRam/IoRam.hpp"
-#include "../../PPU/OamRam/OamRam.hpp"
+#include "../../PPU/PPU.hpp"
 #include "../InterruptController/InterruptController.hpp"
 #include "BootRom/BootRom.hpp"
 #include "InternalRam/InternalRam.hpp"
@@ -55,9 +54,8 @@ public:
 private:
 	//Pointers to different memories.
 	Cartridge* cart;
-	VRAM* vram;
+	PPU* ppu;
 	IoRam* ioRam;
-	OamRam* oamRam;
 	InterruptController* intController;
 	//Memories internal to the CPU
 	BootRom bootRom;
