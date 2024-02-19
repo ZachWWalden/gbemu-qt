@@ -51,6 +51,17 @@ void Execute::emitCycles(uint8_t numCycles)
 	}
 }
 
+uint8_t Execute::executeInstruction(uint8_t* instructionBytes, uint8_t &pcInc)
+{
+	GbInstruction inst = decodeInstruction(instructionBytes);
+	if(!(inst.execFunction((void*)this, inst, instructionBytes)))
+	{
+		LOG("Instruction Errored");
+		return false;
+	}
+	return true;
+}
+
 GbInstruction Execute::decodeInstruction(uint8_t* instructionBytes)
 {
 	return this->instDec[instructionBytes[0]];
