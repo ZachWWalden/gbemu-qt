@@ -52,6 +52,10 @@ void BootRom::write(uint16_t address, uint8_t newValue)
 	this->dmgBootRom[localAddr] = newValue;
 }
 
+void BootRom::disableBootRom()
+{
+	this->enabled = false;
+}
 
 /*
 <++> BootRom::<++>()
