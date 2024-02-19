@@ -33,23 +33,15 @@
 
 #include "HRam.hpp"
 
+uint8_t HRam::read(uint8_t address)
+{
+	return this->hram[address];
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+void HRam::write(uint8_t address, uint8_t value)
+{
+	this->hram[address] = value;
+}
 
 /*
 <++> HRam::<++>()

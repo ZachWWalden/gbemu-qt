@@ -1,9 +1,9 @@
 /*==================================================================================
  *Class - HRam
  *Author - Zach Walden
- *Created -
- *Last Changed -
- *Description -
+ *Created - 2/19/24
+ *Last Changed - 2/19/24
+ *Description - HRam 0xFF80 -> 0xFFFF
 ====================================================================================*/
 
 /*
@@ -29,7 +29,9 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include <cstdint>
 
+#define HRAM_SIZE 256
 
 class HRam
 {
@@ -37,10 +39,13 @@ class HRam
 public:
 
 private:
+	uint8_t hram[HRAM_SIZE];
 	//Methods
 public:
 	HRam();
 	~HRam();
 
+	uint8_t read(uint8_t address);
+	void write(uint8_t address, uint8_t value);
 private:
 };
