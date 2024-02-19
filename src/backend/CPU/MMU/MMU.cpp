@@ -94,11 +94,6 @@ uint8_t MMU::read(uint16_t address)
 			retVal = this->hRam.read(address);
 			break;
 		}
-		case INT_REG :
-		{
-			retVal = this.readIntReg();
-			break;
-		}
 		case NONE :
 		{
 			break;
@@ -154,11 +149,6 @@ void MMU::write(uint16_t address, uint8_t newValue)
 		case HRAM :
 		{
 			this->hRam.write(address, newValue);
-			break;
-		}
-		case INT_REG :
-		{
-			this->writeIntReg(newValue);
 			break;
 		}
 		case NONE :
@@ -219,10 +209,6 @@ MemUnit MMU::decodeAddress(uint16_t address)
 	{
 		retVal = HRAM;
 	}
-	else
-	{
-		retVal = INT_REG;
-	}
 
 	return retVal;
 }
@@ -257,14 +243,6 @@ uint8_t MMU::readCartridge(uint16_t address)
 void MMU::writeCartridge(uint16_t address, uint8_t newValue)
 {
 	this->cart->write(address, newValue);
-}
-uint8_t MMU::readIntReg()
-{
-	return this->intController.readIntReg();
-}
-void MMU::writeIntReg(uint8_t newValue)
-{
-	this->intController->write(newValue);
 }
 
 /*
