@@ -959,6 +959,113 @@ bool Execute::rst(void* instance, GbInstruction inst, uint8_t* instBytes)
 	thees->regFile.writeRegPair(inst.operandOne, address);
 	return true;
 }
+
+
+bool Execute::rotate(void* instance, GbInstruction inst, uint8_t* instBytes)
+{
+	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
+	uint8_t opOne;
+	uint16_t address;
+	if(inst.mode == MemReg16_None)
+	{
+		address = thees->regFile.readRegPair(inst.operandOne);
+		opOne = thees->mem->read(address);
+	}
+	else if(inst.mode == Reg_None)
+	{
+		opOne = thees->regFile.readReg(inst.operandOne);
+	}
+	else
+	{
+		return false;
+	}
+
+	//Each rotate is unique
+	switch(inst.op)
+	{
+		case RRCA :{
+			//Rotate A right. Old bit 0 to Carry flag.
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, (opOne & 0x01) == 0x01);
+			opOne = (opOne >> 1) & 0x7F;
+			opOne = opOne | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x10 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z, false);
+			break;
+		}
+		case RLCA :{
+			//Rotate A left. Old bit 7 to Carry flag.
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, (opOne & 0x10) == 0x10);
+			opOne = (opOne << 1) & 0xFE;
+			opOne = opOne | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x01 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z, false);
+			break;
+		}
+		case RRA :{
+			//Rotate right: carry to bit 7, bit 0 to carry
+			bool temp = (opOne & 0x01) == 0x01;
+			opOne = ((opOne >> 1) & 0x7F) | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x10 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, temp);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z, false);
+			break;
+		}
+		case RLA :{
+			//Rotate left: carry to bit 0, bit 7 to carry
+			bool temp = (opOne & 0x10) == 0x10;
+			opOne = ((opOne << 1) & 0xFE) | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x01 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, temp);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z, false);
+			break;
+		}
+		case RRC :{
+			//Rotate A right. Old bit 0 to Carry flag.
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, (opOne & 0x01) == 0x01);
+			opOne = (opOne >> 1) & 0x7F;
+			opOne = opOne | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x10 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z, opOne == 0x00);
+			break;
+		}
+		case RLC :{
+			//Rotate A left. Old bit 7 to Carry flag.
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, (opOne & 0x10) == 0x10);
+			opOne = (opOne << 1) & 0xFE;
+			opOne = opOne | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x01 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z,opOne == 0x00);
+			break;
+		}
+		case RR :{
+			//Rotate right: carry to bit 7, bit 0 to carry
+			bool temp = (opOne & 0x01) == 0x01;
+			opOne = ((opOne >> 1) & 0x7F) | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x10 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, temp);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z, opOne == 0x00);
+			break;
+		}
+		case RL :{
+			//Rotate left: carry to bit 0, bit 7 to carry
+			bool temp = (opOne & 0x10) == 0x10;
+			opOne = ((opOne << 1) & 0xFE) | (thees->regFile.checkFlag(GbFlag::GbFlag::C) ? 0x01 : 0x00);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, temp);
+			thees->regFile.modifyFlag(GbFlag::GbFlag::Z, opOne == 0x00);
+			break;
+		}
+		default :{
+			return false;
+		}
+	}
+	//reset H and N flags
+	thees->regFile.modifyFlag(GbFlag::GbFlag::H, false);
+	thees->regFile.modifyFlag(GbFlag::GbFlag::N, false);
+
+	if(inst.mode == MemReg16_None)
+	{
+		thees->mem->write(address, opOne);
+	}
+	else
+	{
+		thees->regFile.writeReg(inst.operandOne, opOne);
+	}
+}
+
 /*
 <++> Execute::<++>()
 {

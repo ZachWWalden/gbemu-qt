@@ -710,8 +710,8 @@ private:
 	static bool call(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool ret(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool rst(void* instance, GbInstruction inst, uint8_t* instBytes);
-
 	static bool rotate(void* instance, GbInstruction inst, uint8_t* instBytes);
+
 	static bool stop(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool weird(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool illegal(void* instance, GbInstruction inst, uint8_t* instBytes);
