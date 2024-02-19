@@ -1,9 +1,9 @@
 /*==================================================================================
  *Class - InterruptController
  *Author - Zach Walden
- *Created -
- *Last Changed -
- *Description -
+ *Created - 2/19/24
+ *Last Changed - 2/19/24
+ *Description - Interrupt Controller.
 ====================================================================================*/
 
 /*
@@ -37,6 +37,7 @@ class InterruptController
 public:
 
 private:
+	bool ime = false;
 	//Methods
 public:
 	InterruptController();
