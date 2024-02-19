@@ -1128,6 +1128,12 @@ bool Execute::shift(void* instance, GbInstruction inst, uint8_t* instBytes)
 
 }
 
+bool illegal(void* instance, GbInstruction inst, uint8_t* instBytes)
+{
+	LOG("Illegal Opcode");
+	return false;
+}
+
 /*
 <++> Execute::<++>()
 {
