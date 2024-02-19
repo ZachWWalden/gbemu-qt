@@ -3,7 +3,7 @@
  *Author - Zach Walden
  *Created - 2/19/24
  *Last Changed - 2/19/24
- *Description - Interrupt Controller.
+ *Description - Interrupt Controller, and State Controller
 ====================================================================================*/
 
 /*
@@ -29,7 +29,17 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
+#include "../../CycleListener/CycleListener.hpp"
+#include "../MMU/MMU.hpp"
 
+enum GbState
+{
+	INTERRUPTED, STOPPED, HALTED, NORMAL
+};
+enum GbEvent
+{
+	STOP, HALT
+};
 
 class InterruptController
 {
@@ -38,10 +48,17 @@ public:
 
 private:
 	bool ime = false;
+
+	MMU* mem;
 	//Methods
 public:
 	InterruptController();
 	~InterruptController();
 
+	void getNextPC();
+	//Execute Class will call this when it encounters a halt/stop instruciton.
+	void processControlEvent();
 private:
+	//this will be called each instruction cycle to check for interrupts.
+	void handleInterrupts();
 };
