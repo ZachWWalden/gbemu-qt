@@ -1066,6 +1066,68 @@ bool Execute::rotate(void* instance, GbInstruction inst, uint8_t* instBytes)
 	}
 }
 
+bool Execute::shift(void* instance, GbInstruction inst, uint8_t* instBytes)
+{
+	Execute* thees = (Execute*)instance;
+	thees->emitCycles(inst.cycles);
+	uint8_t opOne;
+	uint16_t address;
+	if(inst.mode == MemReg16_None)
+	{
+		address = thees->regFile.readRegPair(inst.operandOne);
+		opOne = thees->mem->read(address);
+	}
+	else if(inst.mode == Reg_None)
+	{
+		opOne = thees->regFile.readReg(inst.operandOne);
+	}
+	else
+	{
+		return false;
+	}
+
+	//Each rotate is unique
+	switch(inst.op)
+	{
+		case SLA :{
+			//Shift left, bit 7 to C, 0 to bit 0
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, (opOne & 0x10) == 0x10);
+			opOne = (opOne << 1) & 0xFE;
+			break;
+		}
+		case SRA :{
+			//Shift right, bit 0 to C, bit 7 remains unchanged
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, (opOne & 0x01) == 0x01);
+			opOne = ((opOne >> 1) & 0x7F) | (opOne & 0x10);
+			break;
+		}
+		case SRL :{
+			//Shift right, 0 to bit 7, bit 0 to C
+			thees->regFile.modifyFlag(GbFlag::GbFlag::C, (opOne & 0x01) == 0x01);
+			opOne = (opOne >> 1) & 0x7F;
+			break;
+		}
+		default :{
+			return false;
+		}
+	}
+	//reset H and N flags
+	thees->regFile.modifyFlag(GbFlag::GbFlag::H, false);
+	thees->regFile.modifyFlag(GbFlag::GbFlag::N, false);
+	//Set Z if result is zero.
+	thees->regFile.modifyFlag(GbFlag::GbFlag::Z, opOne = 0x00);
+
+	if(inst.mode == MemReg16_None)
+	{
+		thees->mem->write(address, opOne);
+	}
+	else
+	{
+		thees->regFile.writeReg(inst.operandOne, opOne);
+	}
+
+}
+
 /*
 <++> Execute::<++>()
 {

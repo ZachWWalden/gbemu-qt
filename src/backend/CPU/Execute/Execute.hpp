@@ -711,9 +711,9 @@ private:
 	static bool ret(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool rst(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool rotate(void* instance, GbInstruction inst, uint8_t* instBytes);
+	static bool shift(void* instance, GbInstruction inst, uint8_t* instBytes);
 
 	static bool stop(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool weird(void* instance, GbInstruction inst, uint8_t* instBytes);
 	static bool illegal(void* instance, GbInstruction inst, uint8_t* instBytes);
-	static bool shift(void* instance, GbInstruction inst, uint8_t* instBytes);
 };
