@@ -673,14 +673,14 @@ GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegiste
 };
 
 	//Objects and Object Handles.
-	RegisterFile regFile;
+	RegisterFile* regFile;
 	MMU* mem;
 	InterruptController* intController;
 	//vector of callbacks for emitted cycles
 	std::vector<CycleListener*> cycleListeners;
 	//Methods
 public:
-	Execute(MMU* mmu, InterruptController* intCtrl);
+	Execute(MMU* mmu, InterruptController* intCtrl, RegisterFile* regs);
 	~Execute();
 	uint8_t executeInstruction(uint8_t* instructionBytes, uint8_t &pcInc);
 	void registerCycleWatchCalback(CycleListener* listener);
