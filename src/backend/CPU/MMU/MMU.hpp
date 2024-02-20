@@ -37,7 +37,6 @@
 #include "../../Cartridge/Cartridge.hpp"
 #include "../../IoRam/IoRam.hpp"
 #include "../../PPU/OamRam/OamRam.hpp"
-#include "../InterruptController/InterruptController.hpp"
 #include "BootRom/BootRom.hpp"
 #include "InternalRam/InternalRam.hpp"
 #include "HRam/HRam.hpp"
@@ -58,7 +57,6 @@ private:
 	VRAM* vram;
 	IoRam* ioRam;
 	OamRam* oamRam;
-	InterruptController* intController;
 	//Memories internal to the CPU
 	BootRom bootRom;
 	InternalRam internalRam;
@@ -73,10 +71,10 @@ private:
 	int ramStart = 0xC000, ramEnd = 0xDFFF;
 	int oamRamStart = 0xFE00, oamRamEnd = 0xFE9F;
 	int ioRamStart = 0xFF00, ioRamEnd = 0xFF4B;
-	int hRamStart = 0xFF80, hRamEnd = 0xFFFE;
+	int hRamStart = 0xFF80, hRamEnd = 0xFFFF; //Technically ends at 0xFFFE, but I'm hacking the IE register in. since it is nice and clean.
 	//Methods
 public:
-	MMU(Cartridge* cart, VRAM* vram, IoRam* ioRam, InterruptController* intController, OamRam* oamRam);
+	MMU(Cartridge* cart, VRAM* vram, IoRam* ioRam, OamRam* oamRam);
 	~MMU();
 
 	uint8_t read(uint16_t address);
@@ -92,6 +90,4 @@ private:
 	void writeIoRam(uint16_t address, uint8_t newValue);
 	uint8_t readCartridge(uint16_t address);
 	void writeCartridge(uint16_t address, uint8_t newValue);
-	uint8_t readIntReg();
-	void writeIntReg(uint8_t newValue);
 };

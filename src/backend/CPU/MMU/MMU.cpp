@@ -34,14 +34,13 @@
 #include "MMU.hpp"
 
 
-MMMU::MU(Cartridge* cart, VRAM* vram, IoRam* ioRam, InterruptController* intController, OamRam* oamRam)
+MMU::MMU(Cartridge* cart, VRAM* vram, IoRam* ioRam, OamRam* oamRam)
 {
 	this->cart = cart;
 	this->vram = vram;
 	this->ioRam = ioRam;
-	this->intController = intController;
 }
-~MMU::MMU()
+MMU::~MMU()
 {
 
 }
@@ -92,11 +91,6 @@ uint8_t MMU::read(uint16_t address)
 		case HRAM :
 		{
 			retVal = this->hRam.read(address);
-			break;
-		}
-		case INT_REG :
-		{
-			retVal = this.readIntReg();
 			break;
 		}
 		case NONE :
@@ -154,11 +148,6 @@ void MMU::write(uint16_t address, uint8_t newValue)
 		case HRAM :
 		{
 			this->hRam.write(address, newValue);
-			break;
-		}
-		case INT_REG :
-		{
-			this->writeIntReg(newValue);
 			break;
 		}
 		case NONE :
@@ -257,14 +246,6 @@ uint8_t MMU::readCartridge(uint16_t address)
 void MMU::writeCartridge(uint16_t address, uint8_t newValue)
 {
 	this->cart->write(address, newValue);
-}
-uint8_t MMU::readIntReg()
-{
-	return this->intController.readIntReg();
-}
-void MMU::writeIntReg(uint8_t newValue)
-{
-	this->intController->write(newValue);
 }
 
 /*
