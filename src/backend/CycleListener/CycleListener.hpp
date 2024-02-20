@@ -3,7 +3,7 @@
  *Author - Zach Walden
  *Created - 11/4/23
  *Last Changed - 2/18/24
- *Description - Class contains a member callback to track cycles emitted by the CP
+ *Description - Class contains a member callback to track cycles and instruction length emitted by the CPU
 ====================================================================================*/
 
 /*
@@ -39,6 +39,7 @@ public:
 private:
 	bool newCycles = false;
 	uint8_t  numCycles;
+	uint8_t numBytes;
 	//Methods
 public:
 	CycleListener();
@@ -46,7 +47,8 @@ public:
 
 	bool checkForNewCycles();
 	uint8_t getNumCycles();
+	uint8_t getNumBytes();
 
-	void cycleListener(uint8_t);
+	void cycleListener(uint8_t, uint8_t);
 private:
 };

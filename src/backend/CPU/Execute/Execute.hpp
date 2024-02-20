@@ -684,7 +684,7 @@ public:
 	uint8_t executeInstruction(uint8_t* instructionBytes, uint8_t &pcInc);
 	void registerCycleWatchCalback(CycleListener* listener);
 private:
-	void emitCycles(uint8_t numCycles);
+	void emitCycles(uint8_t numCycles, uint8_t numBytes);
 
 	GbInstruction decodeInstruction(uint8_t* instructionBytes);
 	static bool decodePrefixInstruction(void* instance, GbInstruction inst, uint8_t* instBytes);

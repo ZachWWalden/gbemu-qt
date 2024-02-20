@@ -32,6 +32,7 @@
 #pragma once
 
 #include "CycleListener.hpp"
+#include <cstdint>
 
 CycleListener::CycleListener()
 {
@@ -48,10 +49,15 @@ uint8_t CycleListener::getNumCycles()
 	return this->numCycles;
 }
 
+uint8_t CycleListener::getNumBytes()
+{
+	return this->numBytes;
+}
 
-void CycleListener::cycleListener(uint8_t cycles)
+void CycleListener::cycleListener(uint8_t cycles, uint8_t bytes)
 {
 	this->numCycles = cycles;
+	this->numBytes = bytes;
 }
 
 
