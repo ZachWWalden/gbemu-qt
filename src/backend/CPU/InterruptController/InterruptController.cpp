@@ -32,6 +32,7 @@
 #pragma once
 
 #include "InterruptController.hpp"
+#include <cstdint>
 
 InterruptController::InterruptController(MMU* newMem)
 {
@@ -60,7 +61,39 @@ void InterruptController::processControlEvent()
 	//this will be called each instruction cycle to check for interrupts.
 void InterruptController::handleInterrupts()
 {
-
+	uint8_t ifr = this->mem->read(0xFF0F); //Read IF register
+	uint8_t ier = this->mem->read(0xFFFF); //Read IE register
+	uint8_t validInt = ifr & ier;
+	//Check Each bit
+	if(this->ime)
+	{
+		if((validInt & 0x01) == 0x01)
+		{
+			//vblank requested
+			this->isrAddr = 0x0040;
+		}
+		else if((validInt & 0x02) == 0x02)
+		{
+			//lcd requested
+			this->isrAddr = 0x0048;
+		}
+		else if((validInt & 0x04) == 0x04)
+		{
+			//timer requested
+			this->isrAddr = 0x0050;
+		}
+		else if ((validInt & 0x08) == 0x08)
+		{
+			//serial requested
+			this->isrAddr = 0x0058;
+		}
+		else if((validInt & 0x10) == 0x10)
+		{
+			//joypad requested
+			this->isrAddr = 0x0060;
+		}
+		this->processControlEvent(GbInt::GbEvent::INTERRUPT);
+	}
 }
 
 

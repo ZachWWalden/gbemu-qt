@@ -40,7 +40,7 @@ namespace GbInt
 	};
 	enum GbEvent
 	{
-		STOP, HALT, EI, DI
+		STOP, HALT, EI, DI, INTERRUPT
 	};
 };
 
@@ -51,7 +51,7 @@ public:
 
 private:
 	bool ime = false;
-
+	uint16_t isrAddr = 0x0000;
 	MMU* mem;
 	//Methods
 public:
@@ -60,7 +60,7 @@ public:
 
 	void getNextPC();
 	//Execute Class will call this when it encounters a halt/stop instruciton.
-	void processControlEvent();
+	void processControlEvent(GbInt::GbEvent event);
 	void setIME(bool nextIME);
 private:
 	//this will be called each instruction cycle to check for interrupts.
