@@ -38,6 +38,11 @@
 /*
 TODO 1. Fix 16 bit arithmetic half carries.
 */
+Execute::Execute(MMU* mmu, InterruptController* intCtrl)
+{
+	this->mem = mmu;
+	this->intController = intCtrl;
+}
 
 void Execute::registerCycleWatchCalback(CycleListener* listener)
 {
@@ -953,6 +958,7 @@ bool Execute::ret(void* instance, GbInstruction inst, uint8_t* instBytes)
 	if (inst.op == RETI)
 	{
 		//TODO emit interrupt return.
+		this->intController.setIME(true);
 	}
 	return true;
 }

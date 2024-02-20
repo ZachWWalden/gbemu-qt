@@ -33,22 +33,35 @@
 
 #include "InterruptController.hpp"
 
+InterruptController::InterruptController(MMU* newMem)
+{
+	this->mem = newMem;
+}
+InterruptController::~InterruptController()
+{
 
+}
 
+void InterruptController::getNextPC()
+{
 
+}
 
+void InterruptController::setIME(bool nextIme)
+{
+	this->ime = nextIme;
+}
 
+	//Execute Class will call this when it encounters a halt/stop instruciton.
+void InterruptController::processControlEvent()
+{
 
+}
+	//this will be called each instruction cycle to check for interrupts.
+void InterruptController::handleInterrupts()
+{
 
-
-
-
-
-
-
-
-
-
+}
 
 
 /*

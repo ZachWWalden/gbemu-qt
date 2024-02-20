@@ -33,7 +33,7 @@
 
 #include "RegisterFile/RegisterFile.hpp"
 #include "../MMU/MMU.hpp"
-#include "../../CycleListener/CycleListener.hpp"
+#include "../InterruptController/InterruptController.hpp"
 
 #include <cstdint>
 #include <vector>
@@ -675,11 +675,12 @@ GbInstruction(AddressingMode::Reg_None, CpuOperation::SET, GbRegister::GbRegiste
 	//Objects and Object Handles.
 	RegisterFile regFile;
 	MMU* mem;
+	InterruptController* intController;
 	//vector of callbacks for emitted cycles
 	std::vector<CycleListener*> cycleListeners;
 	//Methods
 public:
-	Execute();
+	Execute(MMU* mmu, InterruptController* intCtrl);
 	~Execute();
 	uint8_t executeInstruction(uint8_t* instructionBytes, uint8_t &pcInc);
 	void registerCycleWatchCalback(CycleListener* listener);

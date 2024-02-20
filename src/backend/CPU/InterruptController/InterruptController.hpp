@@ -32,13 +32,16 @@
 #include "../../CycleListener/CycleListener.hpp"
 #include "../MMU/MMU.hpp"
 
-enum GbState
+namespace GbInt
 {
-	INTERRUPTED, STOPPED, HALTED, NORMAL
-};
-enum GbEvent
-{
-	STOP, HALT
+	enum GbState
+	{
+		INTERRUPTED, STOPPED, HALTED, NORMAL
+	};
+	enum GbEvent
+	{
+		STOP, HALT, EI, DI
+	};
 };
 
 class InterruptController
@@ -52,12 +55,13 @@ private:
 	MMU* mem;
 	//Methods
 public:
-	InterruptController();
+	InterruptController(MMU* newMem);
 	~InterruptController();
 
 	void getNextPC();
 	//Execute Class will call this when it encounters a halt/stop instruciton.
 	void processControlEvent();
+	void setIME(bool nextIME);
 private:
 	//this will be called each instruction cycle to check for interrupts.
 	void handleInterrupts();
