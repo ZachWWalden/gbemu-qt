@@ -30,6 +30,7 @@
  */
 
 #include "../../CycleListener/CycleListener.hpp"
+#include "../Execute/RegisterFile/RegisterFile.hpp"
 #include "../MMU/MMU.hpp"
 
 namespace GbInt
@@ -40,7 +41,7 @@ namespace GbInt
 	};
 	enum GbEvent
 	{
-		STOP, HALT, EI, DI, INTERRUPT
+		STOP, HALT, EI, DI, INTERRUPT, INSTCYCLE
 	};
 };
 
@@ -50,12 +51,23 @@ class InterruptController
 public:
 
 private:
+	RegisterFile* regFile;
+	CycleListener* listener;
+
 	bool ime = false;
+	bool nextIme = false;
+	bool imeChangePending = false;
+	uint8_t imeCycleCount = 0;
+
 	uint16_t isrAddr = 0x0000;
+	bool interruptPending = false;
+	uint8_t intIdent = 0x00;
+
 	MMU* mem;
+	GbInt::GbState state = GbInt::GbState::NORMAL;
 	//Methods
 public:
-	InterruptController(MMU* newMem);
+	InterruptController(MMU* newMem, RegisterFile* regs, CycleListener* nListener);
 	~InterruptController();
 
 	void getNextPC();
